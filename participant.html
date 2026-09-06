@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Ficha del participante | TRD La Regional Esmeralda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#072144;--cyan:#19dce5;--mint:#b6e7ff;--ink:#081a28;--muted:#8fa8b6}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Barlow,sans-serif;color:#eef8fb;background:radial-gradient(circle at 15% 10%,rgba(25,220,229,.10),transparent 30%),linear-gradient(135deg,#06121d,#072144 60%,#06151f)}
+.page{width:min(760px,calc(100% - 32px));margin:0 auto;padding:42px 0 60px}.brand{display:flex;align-items:center;gap:14px;margin-bottom:28px}.brand img{width:48px;height:48px}.brand b{display:block;font-family:'Barlow Condensed';font-size:20px}.brand small{color:var(--muted)}
+.card{background:rgba(8,26,40,.88);border:1px solid rgba(182,231,255,.12);border-radius:24px;padding:30px;box-shadow:0 24px 70px rgba(0,0,0,.28)}.eyebrow{font-size:11px;letter-spacing:.14em;color:var(--cyan);font-weight:800}.avatar{width:82px;height:82px;border-radius:22px;display:grid;place-items:center;background:rgba(25,220,229,.08);border:1px solid rgba(25,220,229,.28);color:var(--cyan);font-family:'Barlow Condensed';font-size:38px;margin:20px 0 14px}.name{font-family:'Barlow Condensed';font-size:46px;line-height:.95;margin:0 0 8px}.team{font-size:17px;color:#d5e7ee}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:26px}.item{padding:15px 16px;border-radius:14px;background:rgba(182,231,255,.045);border:1px solid rgba(182,231,255,.08)}.item span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:4px}.item strong{font-size:15px}.note{margin-top:20px;color:var(--muted);font-size:12px;line-height:1.5}.back{display:inline-flex;margin-top:20px;color:var(--cyan);text-decoration:none;font-weight:700}@media(max-width:600px){.card{padding:22px}.name{font-size:38px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body><main class="page"><div class="brand"><img src="assets/logo-regional17.svg" alt="Regional 17"><div><b>TRD La Regional Esmeralda</b><small>Ficha de participante · Regional 17</small></div></div><section id="profile" class="card"><div class="eyebrow">IDENTIFICACIÓN DEL PARTICIPANTE</div><div class="avatar">♙</div><h1 class="name">Cargando…</h1><div class="team">Estamos consultando la ficha del participante.</div></section><a class="back" href="index.html#participantes">← Volver a participantes</a></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const db=supabase.createClient('https://bstdgcpakqmltifzaqso.supabase.co','sb_publishable_-39OPIl11i5GSPBbF3q0ew_puLiVK7N');
+const esc=v=>String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]));
+const labelRole=r=>r==='alternate'?'Suplente':'Debatiente';
+async function load(){
+ const id=new URLSearchParams(location.search).get('id'),box=document.querySelector('#profile');
+ if(!id){box.innerHTML='<div class="eyebrow">FICHA NO DISPONIBLE</div><h1 class="name">Participante no encontrado</h1><p class="note">El código de la ficha no es válido.</p>';return}
+ const {data,error}=await db.rpc('get_esmeralda_public_debater',{p_debater_id:id});
+ if(error||!data?.length){box.innerHTML='<div class="eyebrow">FICHA NO DISPONIBLE</div><h1 class="name">Participante no encontrado</h1><p class="note">La ficha no existe, no está publicada o el equipo todavía no ha sido aprobado.</p>';return}
+ const p=data[0];
+ box.innerHTML=`<div class="eyebrow">PARTICIPANTE REGISTRADO</div><div class="avatar">♙</div><h1 class="name">${esc(p.full_name)}</h1><div class="team">${esc(p.team_name)}</div><div class="grid"><div class="item"><span>Centro educativo</span><strong>${esc(p.school_name)}</strong></div><div class="item"><span>Distrito</span><strong>${esc(p.district||'—')}</strong></div><div class="item"><span>Curso / grado</span><strong>${esc(p.grade||'—')}</strong></div><div class="item"><span>Rol</span><strong>${esc(labelRole(p.role))}</strong></div><div class="item"><span>ID del participante</span><strong>${esc(p.id)}</strong></div><div class="item"><span>Equipo</span><strong>${esc(p.team_name)}</strong></div></div><p class="note">Esta ficha se genera a partir del registro oficial del TRD. Los datos de contacto personales no se muestran públicamente.</p>`;
+}
+load();
+</script></body></html>
