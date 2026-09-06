@@ -5,7 +5,7 @@ const db=createClient(SUPABASE_URL,SUPABASE_KEY);
 const EVENT_SLUG='trd-la-regional-esmeralda';
 let event=null,debaterIndex=0;
 const $=s=>document.querySelector(s);
-const esc=(v='')=>String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c]));
+const esc=(v='')=>String(v).replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c]));
 
 async function loadEvent(){
   const {data,error}=await db.from('esmeralda_events').select('*').eq('slug',EVENT_SLUG).maybeSingle();
@@ -19,7 +19,7 @@ function addDebater(){
   const row=document.createElement('div');
   row.className='debater-row';
   row.dataset.id=id;
-  row.innerHTML=`<input name="debater_name_${id}" required placeholder="Nombre completo" aria-label="Nombre del integrante"/><input name="debater_email_${id}" type="email" placeholder="Correo"/><select name="debater_role_${id}"><option value="captain">Capitán/a</option><option value="debater" selected>Debatiente</option><option value="alternate">Suplente</option></select><button type="button" class="remove" aria-label="Eliminar integrante">×</button>`;
+  row.innerHTML=`<input name="debater_name_${id}" required placeholder="Nombre completo" aria-label="Nombre del integrante"/><input name="debater_email_${id}" type="email" placeholder="Correo"/><select name="debater_role_${id}"><option value="debater" selected>Debatiente</option><option value="alternate">Suplente</option></select><button type="button" class="remove" aria-label="Eliminar integrante">×</button>`;
   row.querySelector('.remove').onclick=()=>row.remove();
   $('#debaters').appendChild(row);
 }
