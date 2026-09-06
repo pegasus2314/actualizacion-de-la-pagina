@@ -47,7 +47,7 @@
 
   document.addEventListener('click',e=>{
     const qr=e.target.closest('[data-qr-id]');if(qr){const p=participantsCache.find(x=>x.id===qr.dataset.qrId);if(p)qrCard(p);return}
-    const pairBtn=e.target.closest('[data-panel="pairing"]');if(pairBtn){currentPanel='pairing';setTimeout(renderPairing,0);return}
+    const pairBtn=e.target.closest('[data-panel="pairing"]');if(pairBtn){setTimeout(renderPairing,0);return}
     if(e.target.closest('[data-action="generate-pairs"]'))generatePairs();
   });
   window.addEventListener('hashchange',()=>{if(location.hash==='#participantes')setTimeout(renderParticipants,60)});
