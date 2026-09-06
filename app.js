@@ -33,19 +33,22 @@ async function submitRegistration(e){
     if(!event) throw new Error('El evento no está disponible para inscripción.');
     const fd=new FormData(form),rows=[...document.querySelectorAll('.debater-row')];
     if(!rows.length) throw new Error('Añade al menos un integrante.');
-    const teamPayload={event_id:event.id,team_name:fd.get('team_name'),school_name:fd.get('school_name'),district:fd.get('district')||null,contact_name:fd.get('contact_name'),contact_email:fd.get('contact_email'),contact_phone:fd.get('contact_phone'),status:'pending'};
-    const {data:team,error:teamError}=await db.from('esmeralda_teams').insert(teamPayload).select('id').single();
+    // Generate the team UUID in the browser so the public INSERT does not need SELECT/RETURNING,
+    // which would require exposing team rows through a public SELECT policy.
+    const teamId=crypto.randomUUID();
+    const teamPayload={id:teamId,event_id:event.id,team_name:fd.get('team_name'),school_name:fd.get('school_name'),district:fd.get('district')||null,contact_name:fd.get('contact_name'),contact_email:fd.get('contact_email'),contact_phone:fd.get('contact_phone'),status:'pending'};
+    const {error:teamError}=await db.from('esmeralda_teams').insert(teamPayload);
     if(teamError) throw teamError;
 
-    const coachPayload={team_id:team.id,full_name:fd.get('coach_name'),email:fd.get('coach_email'),phone:fd.get('coach_phone'),school_name:fd.get('coach_school'),district:fd.get('coach_district')||fd.get('district')||null,consent:$('#coachConsent').checked};
+    const coachPayload={team_id:teamId,full_name:fd.get('coach_name'),email:fd.get('coach_email'),phone:fd.get('coach_phone'),school_name:fd.get('coach_school'),district:fd.get('coach_district')||fd.get('district')||null,consent:$('#coachConsent').checked};
     const {error:coachError}=await db.from('esmeralda_coaches').insert(coachPayload);
     if(coachError) throw coachError;
 
-    const debaters=rows.map(r=>({team_id:team.id,full_name:r.querySelector(`[name^="debater_name_"]`).value,email:r.querySelector(`[name^="debater_email_"]`).value||null,role:r.querySelector('select').value,consent:$('#consent').checked}));
+    const debaters=rows.map(r=>({team_id:teamId,full_name:r.querySelector(`[name^="debater_name_"]`).value,email:r.querySelector(`[name^="debater_email_"]`).value||null,role:r.querySelector('select').value,consent:$('#consent').checked}));
     const {error:dError}=await db.from('esmeralda_debaters').insert(debaters);
     if(dError) throw dError;
 
-    const {error:rError}=await db.from('esmeralda_registrations').insert({event_id:event.id,team_id:team.id,registration_type:'team',status:'pending',payload:{team_name:teamPayload.team_name,school_name:teamPayload.school_name,contact_email:teamPayload.contact_email,coach_name:coachPayload.full_name,coach_email:coachPayload.email}});
+    const {error:rError}=await db.from('esmeralda_registrations').insert({event_id:event.id,team_id:teamId,registration_type:'team',status:'pending',payload:{team_name:teamPayload.team_name,school_name:teamPayload.school_name,contact_email:teamPayload.contact_email,coach_name:coachPayload.full_name,coach_email:coachPayload.email}});
     if(rError) throw rError;
 
     form.reset();
