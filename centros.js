@@ -14,6 +14,17 @@
     ['17-05','04665','Modesto Belén'],['17-05','09186','Hilario Vásquez de León'],['17-05','09185','Gregorio Luperón'],['17-05','09166','Rafael Castillo Reinoso']
   ].map(([district,code,name])=>({district,code,name}));
 
+  const ensureNav=()=>{
+    const nav=document.querySelector('.nav');
+    if(!nav || nav.querySelector('[data-view="centros"]')) return !!nav;
+    const a=document.createElement('a');
+    a.href='#centros';
+    a.dataset.view='centros';
+    a.innerHTML='⌂ <span>Centros</span>';
+    nav.appendChild(a);
+    return true;
+  };
+
   function render(filter='all'){
     const grid=document.getElementById('centrosGrid');
     if(!grid)return;
@@ -28,6 +39,7 @@
     section.classList.remove('view-hidden');
     document.body.classList.add('viewing-section');
     document.querySelectorAll('[data-view]').forEach(a=>a.classList.toggle('active',a.dataset.view==='centros'&&a.closest('.nav')));
+    ensureNav();
   }
 
   function hide(){
@@ -36,15 +48,8 @@
   }
 
   function inject(){
+    ensureNav();
     if(document.getElementById('centros'))return;
-    const nav=document.querySelector('.nav');
-    if(nav&&!nav.querySelector('[data-view="centros"]')){
-      const a=document.createElement('a');
-      a.href='#centros';
-      a.dataset.view='centros';
-      a.innerHTML='⌂ <span>Centros</span>';
-      nav.appendChild(a);
-    }
     const main=document.querySelector('main');
     if(!main)return;
     const section=document.createElement('section');
@@ -64,38 +69,35 @@
       <div class="centros-source-note"><strong>Fuente:</strong> catálogo de centros de secundaria y técnico-profesionales verificados con referencias públicas del MINERD/DGES. La vista está organizada por los cinco distritos de la Regional 17.</div>`;
     main.appendChild(section);
     render();
-    document.addEventListener('click',e=>{
-      const filter=e.target.closest('[data-centro-filter]');
-      if(!filter)return;
-      document.querySelectorAll('[data-centro-filter]').forEach(b=>b.classList.toggle('primary',b===filter));
-      document.querySelectorAll('[data-centro-filter]').forEach(b=>b.classList.toggle('outline',b!==filter));
-      render(filter.dataset.centroFilter);
-    });
     if(location.hash==='#centros')activate();
   }
 
   document.addEventListener('click',e=>{
     const link=e.target.closest('[data-view]');
-    if(!link)return;
-    if(link.dataset.view==='centros'){
+    if(link&&link.dataset.view==='centros'){
       e.preventDefault();
+      if(!document.getElementById('centros'))inject();
       history.pushState({},'', '#centros');
       activate();
-    }else{
-      hide();
+      return;
     }
+    const filter=e.target.closest('[data-centro-filter]');
+    if(filter){
+      document.querySelectorAll('[data-centro-filter]').forEach(b=>{b.classList.toggle('primary',b===filter);b.classList.toggle('outline',b!==filter)});
+      render(filter.dataset.centroFilter);
+      return;
+    }
+    if(link)hide();
   });
+
   window.addEventListener('popstate',()=>location.hash==='#centros'?activate():hide());
   window.addEventListener('hashchange',()=>location.hash==='#centros'?activate():hide());
 
-  // app.js carga este archivo antes del controlador de navegación del index.
-  // Si el DOM principal ya existe, inyectamos ahora para que "Centros"
-  // forme parte del menú y del conjunto de vistas desde el primer render.
-  if(document.querySelector('.nav')&&document.querySelector('main')){
-    inject();
-  }else if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',inject,{once:true});
-  }else{
-    inject();
-  }
+  const boot=()=>{inject();ensureNav();};
+  boot();
+  document.addEventListener('DOMContentLoaded',boot,{once:true});
+  const navWatch=setInterval(()=>{
+    if(ensureNav() && document.querySelector('[data-view="centros"]'))clearInterval(navWatch);
+  },100);
+  setTimeout(()=>clearInterval(navWatch),10000);
 })();
