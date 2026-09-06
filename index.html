@@ -37,7 +37,7 @@
         <h1>La Regional <em>Esmeralda</em></h1>
         <h3>Regional 17 · Monte Plata</h3>
         <p class="hero-lead">Ideas que construyen, argumentos que inspiran.</p>
-        <p>La plataforma oficial del Torneo Regional de Debate. Aquí puedes registrar tu equipo, consultar los participantes aprobados y conocer la información del torneo.</p>
+        <p>Registra tu equipo, consulta los participantes aprobados y revisa la información oficial del torneo desde un mismo lugar.</p>
         <div class="hero-actions">
           <a class="btn primary" href="#inscripcion">♟ &nbsp; Inscribir equipo <span>→</span></a>
           <a class="btn outline" href="#participantes">♙ &nbsp; Ver participantes</a>
@@ -49,18 +49,18 @@
   <section class="section home-intro">
     <div class="section-heading">
       <span class="eyebrow">TRD LA REGIONAL ESMERALDA</span>
-      <h2>Todo lo importante, sin complicaciones.</h2>
-      <p>La portada se mantiene enfocada en las acciones que realmente necesitas. Cada sección tiene su propio espacio y no mezclamos funciones que todavía no forman parte del sistema.</p>
+      <h2>Accede a la información que necesitas.</h2>
+      <p>Desde aquí puedes realizar una inscripción, consultar los equipos aprobados o conocer los datos oficiales del torneo.</p>
     </div>
     <div class="competition-grid">
       <a class="competition-card" href="#inscripcion">
-        <span>♟</span><b>Inscripción</b><small>Registra tu centro, docente coach e integrantes.</small><strong>Registrar equipo →</strong>
+        <span>♟</span><b>Inscripción</b><small>Registra el equipo, centro educativo, docente coach e integrantes.</small><strong>Registrar equipo →</strong>
       </a>
       <a class="competition-card" href="#participantes">
-        <span>♙</span><b>Participantes</b><small>Consulta los equipos que ya fueron aprobados.</small><strong>Ver equipos →</strong>
+        <span>♙</span><b>Participantes</b><small>Consulta los equipos cuya inscripción ya fue aprobada por la organización.</small><strong>Ver equipos →</strong>
       </a>
       <a class="competition-card" href="#torneo">
-        <span>◉</span><b>Información del torneo</b><small>Conoce fecha, hora, lugar y modalidad.</small><strong>Consultar →</strong>
+        <span>◉</span><b>Información del torneo</b><small>Consulta la fecha, hora, lugar y modalidad del Torneo Regional de Debate.</small><strong>Consultar →</strong>
       </a>
     </div>
   </section>
@@ -69,11 +69,11 @@
     <div class="section-heading">
       <span class="eyebrow">EL TORNEO</span>
       <h2>Información del torneo</h2>
-      <p>Los datos esenciales del evento, presentados de forma clara y directa.</p>
+      <p>Aquí encontrarás los datos oficiales de la actividad: cuándo se realiza, dónde será y bajo qué modalidad.</p>
     </div>
     <div class="dashboard-grid">
       <div class="panel modules-panel">
-        <div class="panel-heading"><span class="section-icon">◉</span><div><h2>Datos del evento</h2><p>Información oficial del TRD.</p></div></div>
+        <div class="panel-heading"><span class="section-icon">◉</span><div><h2>Datos del evento</h2><p>Fecha, hora, lugar y modalidad del TRD.</p></div></div>
         <div class="event-info">
           <div><span>▣</span><b>Fecha</b><p>28 de abril de 2026</p></div>
           <div><span>◷</span><b>Hora</b><p>7:30 AM</p></div>
@@ -92,7 +92,7 @@
   <section id="inscripcion" class="section form-section">
     <div class="section-heading">
       <span class="eyebrow">INSCRIPCIÓN</span><h2>Registra tu equipo</h2>
-      <p>Completa los datos del centro, docente coach e integrantes. La organización revisará la solicitud.</p>
+      <p>Completa los datos del equipo, centro educativo, docente coach e integrantes. La organización revisará la solicitud antes de aprobarla.</p>
     </div>
     <form id="registrationForm" class="glass-form">
       <div class="form-grid">
@@ -105,7 +105,7 @@
       </div>
       <div class="divider"><span>DOCENTE COACH</span></div>
       <div class="coach-box">
-        <div class="coach-intro"><span>♙</span><div><strong>Docente Coach</strong><p>Registra al docente que acompañará al equipo.</p></div></div>
+        <div class="coach-intro"><span>♙</span><div><strong>Docente Coach</strong><p>Indica los datos del docente que acompañará al equipo durante el torneo.</p></div></div>
         <div class="form-grid">
           <label>Nombre completo<input name="coach_name" required placeholder="Nombre y apellidos"></label>
           <label>Correo electrónico<input name="coach_email" type="email" required placeholder="coach@centro.edu.do"></label>
@@ -124,7 +124,7 @@
   </section>
 
   <section id="participantes" class="section">
-    <div class="section-heading"><span class="eyebrow">PARTICIPANTES</span><h2>Equipos aprobados</h2><p>Consulta los equipos que ya forman parte del torneo.</p></div>
+    <div class="section-heading"><span class="eyebrow">PARTICIPANTES</span><h2>Equipos aprobados</h2><p>Consulta aquí los equipos que la organización ha aprobado para participar en el torneo.</p></div>
     <div id="teamsGrid" class="teams-grid"><div class="empty">Cargando equipos…</div></div>
   </section>
 
@@ -142,7 +142,7 @@
 
 <dialog id="loginDialog">
   <form method="dialog" id="loginForm" class="login-card">
-    <button type="button" class="close" id="closeLogin">×</button><span class="eyebrow">PERSONAL AUTORIZADO</span><h2>Iniciar sesión</h2><p>Accede al panel de administración del torneo.</p>
+    <button type="button" class="close" id="closeLogin">×</button><span class="eyebrow">PERSONAL AUTORIZADO</span><h2>Iniciar sesión</h2><p>Accede al panel donde se gestionan las inscripciones y la información administrativa del torneo.</p>
     <label>Correo<input id="loginEmail" type="email" required></label><label>Contraseña<input id="loginPassword" type="password" required></label><button class="btn primary" type="submit">Entrar</button><div id="loginMessage" class="form-message"></div>
   </form>
 </dialog>
