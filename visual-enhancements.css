@@ -8,7 +8,6 @@
 .btn.primary:hover{background:#32e2e9;border-color:#32e2e9}
 .btn.small{min-height:40px;padding:9px 14px;border-radius:10px}
 .hero-actions .btn{min-height:50px;padding:14px 22px;border-radius:13px}
-
 .glass-form{padding:32px;border-radius:20px;background:linear-gradient(145deg,rgba(14,38,55,.96),rgba(8,27,42,.98));border-color:rgba(182,231,255,.18);box-shadow:var(--ui-shadow)}
 .form-grid{gap:19px}
 .glass-form label,.login-card label{gap:8px;font-size:13px;color:#c7d9e3}
@@ -34,51 +33,24 @@
 .form-footer{margin-top:24px;padding-top:20px;border-top:1px solid rgba(182,231,255,.11);align-items:center}
 .form-footer .btn{min-width:190px}
 .form-message{padding:9px 12px;border-radius:10px;background:rgba(255,255,255,.025)}
-
-/* Participant teams */
 .teams-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 .team-card,.participant-team{padding:20px;border-radius:16px;background:linear-gradient(145deg,#0d2435,#091b2a);border-color:rgba(182,231,255,.15);box-shadow:0 10px 26px rgba(0,0,0,.14);transition:.18s}
 .team-card:hover,.participant-team:hover{transform:translateY(-3px);border-color:rgba(25,220,229,.4);box-shadow:0 16px 34px rgba(0,0,0,.2)}
-.team-card h3{font-size:20px;margin:9px 0 5px}
-.team-card p{font-size:12px;line-height:1.5}
-.participants-grid{gap:14px}
-.participant-team h3{margin:7px 0 4px;font-size:20px}
+.team-card h3{font-size:20px;margin:9px 0 5px}.team-card p{font-size:12px;line-height:1.5}
+.participants-grid{gap:14px}.participant-team h3{margin:7px 0 4px;font-size:20px}
 .participant-number{width:34px;height:34px;border-radius:10px;background:var(--ui-cyan-soft);border:1px solid rgba(25,220,229,.24);color:var(--ui-cyan);font-weight:800;display:grid;place-items:center}
-.participant-info{padding:13px 0;border-top:1px solid rgba(182,231,255,.10)}
-.participant-info strong{font-size:14px}
-.participant-info small{color:#88a1b1;font-size:11px}
-.qr-btn{min-height:40px;padding:9px 13px;border-radius:10px;border:1px solid rgba(25,220,229,.35);background:rgba(25,220,229,.06);color:var(--ui-cyan);font-weight:700;cursor:pointer;transition:.18s}
-.qr-btn:hover{background:rgba(25,220,229,.12);border-color:var(--ui-cyan);transform:translateY(-1px)}
-
-/* Team consultation dialog */
-.team-detail-dialog{width:min(720px,92vw);min-width:0;border-radius:20px}
-.team-detail-dialog::backdrop{background:rgba(0,8,18,.82);backdrop-filter:blur(7px)}
-.team-detail-dialog .login-card,.team-detail-dialog>div{border-radius:20px}
-.team-detail-dialog h2{font-size:32px;margin:0 0 5px;font-family:'Barlow Condensed',sans-serif}
-.team-detail-dialog h3{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--ui-cyan);margin:24px 0 11px}
-.team-detail-dialog hr{border-color:rgba(182,231,255,.11);margin:18px 0}
-.team-detail-dialog ul{list-style:none;padding:0;margin:0;display:grid;gap:8px}
-.team-detail-dialog li{padding:12px 14px;border:1px solid rgba(182,231,255,.11);border-radius:11px;background:rgba(4,17,27,.34)}
-
-/* Accreditation / admin */
-.admin-nav{gap:9px;margin-bottom:15px}
-.admin-nav button{min-height:43px;padding:10px 15px;border-radius:11px;background:rgba(10,29,43,.68);border-color:rgba(182,231,255,.13);font-size:12px;font-weight:700;transition:.18s}
-.admin-nav button.active,.admin-nav button:hover{background:rgba(25,220,229,.10);border-color:rgba(25,220,229,.42);color:#fff;transform:translateY(-1px)}
-.admin-content{padding:24px;border-radius:16px;background:linear-gradient(145deg,#0b2030,#081b2a);border-color:rgba(182,231,255,.15);box-shadow:var(--ui-shadow)}
-.admin-toolbar{padding-bottom:15px;border-bottom:1px solid rgba(182,231,255,.10)}
-.admin-grid{gap:12px}
-.admin-card{padding:18px;border-radius:13px;background:rgba(4,17,27,.38);border-color:rgba(182,231,255,.12)}
-.admin-card strong{font-size:28px}
-.data-table th,.data-table td{padding:13px 11px}
-.data-table tbody tr:hover{background:rgba(25,220,229,.035)}
-
-/* Accreditation page */
-.accreditation-shell,.accreditation-card,.accreditation-panel,.verify-card,.status-card{border-radius:18px!important}
-.accreditation-card,.accreditation-panel{background:linear-gradient(145deg,#0d2435,#091b2a)!important;border-color:rgba(182,231,255,.16)!important;box-shadow:var(--ui-shadow)}
-.accreditation-card input,.accreditation-card select,.accreditation-panel input,.accreditation-panel select{min-height:50px!important;border-radius:12px!important;background:rgba(4,17,27,.7)!important}
-.accreditation-card button,.accreditation-panel button{min-height:44px;border-radius:11px;font-weight:700}
-.verify-card{padding:24px!important;border:1px solid rgba(25,220,229,.28)!important;background:rgba(25,220,229,.055)!important}
-.status-card{padding:16px!important;border:1px solid rgba(182,231,255,.12)!important;background:rgba(4,17,27,.35)!important}
-
+.participant-info{padding:13px 0;border-top:1px solid rgba(182,231,255,.10)}.participant-info strong{font-size:14px}.participant-info small{color:#88a1b1;font-size:11px}
+.qr-btn{min-height:40px;padding:9px 13px;border-radius:10px;border:1px solid rgba(25,220,229,.35);background:rgba(25,220,229,.06);color:var(--ui-cyan);font-weight:700;cursor:pointer;transition:.18s}.qr-btn:hover{background:rgba(25,220,229,.12);border-color:var(--ui-cyan);transform:translateY(-1px)}
+.team-detail-dialog{width:min(720px,92vw);min-width:0;border-radius:20px}.team-detail-dialog::backdrop{background:rgba(0,8,18,.82);backdrop-filter:blur(7px)}
+.team-detail-dialog h2{font-size:32px;margin:0 0 5px;font-family:'Barlow Condensed',sans-serif}.team-detail-dialog h3{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--ui-cyan);margin:24px 0 11px}.team-detail-dialog hr{border-color:rgba(182,231,255,.11);margin:18px 0}.team-detail-dialog ul{list-style:none;padding:0;margin:0;display:grid;gap:8px}.team-detail-dialog li{padding:12px 14px;border:1px solid rgba(182,231,255,.11);border-radius:11px;background:rgba(4,17,27,.34)}
+.admin-nav{gap:9px;margin-bottom:15px}.admin-nav button{min-height:43px;padding:10px 15px;border-radius:11px;background:rgba(10,29,43,.68);border-color:rgba(182,231,255,.13);font-size:12px;font-weight:700;transition:.18s}.admin-nav button.active,.admin-nav button:hover{background:rgba(25,220,229,.10);border-color:rgba(25,220,229,.42);color:#fff;transform:translateY(-1px)}
+.admin-content{padding:24px;border-radius:16px;background:linear-gradient(145deg,#0b2030,#081b2a);border-color:rgba(182,231,255,.15);box-shadow:var(--ui-shadow)}.admin-toolbar{padding-bottom:15px;border-bottom:1px solid rgba(182,231,255,.10)}.admin-grid{gap:12px}.admin-card{padding:18px;border-radius:13px;background:rgba(4,17,27,.38);border-color:rgba(182,231,255,.12)}.admin-card strong{font-size:28px}.data-table th,.data-table td{padding:13px 11px}.data-table tbody tr:hover{background:rgba(25,220,229,.035)}
+/* Standalone accreditation page */
+body:has(.wrap) .wrap{width:min(980px,calc(100% - 32px));padding:34px 0 72px}
+body:has(.wrap) .brand{padding:8px 2px;margin-bottom:22px}.wrap .card{padding:34px;border-radius:22px;background:linear-gradient(145deg,rgba(13,36,53,.98),rgba(7,25,39,.98));border-color:rgba(182,231,255,.17);box-shadow:0 24px 70px rgba(0,0,0,.3)}
+.wrap .card h1{font-size:48px;letter-spacing:-.01em}.wrap .grid{gap:14px}.wrap .field{padding:17px 18px;border-radius:14px;background:rgba(4,17,27,.38);border-color:rgba(182,231,255,.12);transition:.18s}.wrap .field:hover{border-color:rgba(25,220,229,.28);transform:translateY(-1px)}.wrap .field span{font-size:10px;letter-spacing:.09em}.wrap .field strong{font-size:15px}.wrap .verification-ok{padding:18px;border-radius:15px;background:rgba(25,220,229,.055);border-color:rgba(25,220,229,.22)}.wrap .btn{min-height:46px;padding:12px 19px;border-radius:11px}.wrap .note{font-size:12px}.wrap .status{padding:9px 13px}
+/* Standalone participant sheet */
+body:has(.page) .page{width:min(820px,calc(100% - 32px));padding:34px 0 64px}.page .card{padding:34px;border-radius:22px;background:linear-gradient(145deg,rgba(13,36,53,.98),rgba(7,25,39,.98));border-color:rgba(182,231,255,.17);box-shadow:0 24px 70px rgba(0,0,0,.3)}
+.page .avatar{width:88px;height:88px;border-radius:24px;background:rgba(25,220,229,.09);border-color:rgba(25,220,229,.28);box-shadow:0 12px 28px rgba(0,0,0,.16)}.page .name{font-size:50px}.page .team{font-size:18px;color:#d9eaf0}.page .grid{gap:14px;margin-top:28px}.page .item{padding:17px 18px;border-radius:14px;background:rgba(4,17,27,.38);border-color:rgba(182,231,255,.12)}.page .item:hover{border-color:rgba(25,220,229,.24)}.page .private{padding:18px;border-radius:16px;background:rgba(25,220,229,.045);border-color:rgba(25,220,229,.17)}.page .back{padding:10px 0;font-size:13px}
 @media(max-width:900px){.teams-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.debater-row{grid-template-columns:1fr 1fr}}
-@media(max-width:620px){.glass-form{padding:20px;border-radius:16px}.form-grid,.debater-row{grid-template-columns:1fr}.form-footer{align-items:stretch;flex-direction:column}.form-footer .btn{width:100%}.teams-grid{grid-template-columns:1fr}.admin-content{padding:17px}.admin-nav{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}.admin-nav button{white-space:nowrap}.hero-actions{flex-direction:column}.hero-actions .btn{width:100%}}
+@media(max-width:620px){.glass-form{padding:20px;border-radius:16px}.form-grid,.debater-row{grid-template-columns:1fr}.form-footer{align-items:stretch;flex-direction:column}.form-footer .btn{width:100%}.teams-grid{grid-template-columns:1fr}.admin-content{padding:17px}.admin-nav{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}.admin-nav button{white-space:nowrap}.hero-actions{flex-direction:column}.hero-actions .btn{width:100%}.wrap .card,.page .card{padding:22px}.wrap .card h1{font-size:36px}.page .name{font-size:39px}.wrap .grid,.page .grid{grid-template-columns:1fr}}
