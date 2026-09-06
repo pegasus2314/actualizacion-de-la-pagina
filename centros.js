@@ -87,5 +87,15 @@
   });
   window.addEventListener('popstate',()=>location.hash==='#centros'?activate():hide());
   window.addEventListener('hashchange',()=>location.hash==='#centros'?activate():hide());
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',inject);else inject();
+
+  // app.js carga este archivo antes del controlador de navegación del index.
+  // Si el DOM principal ya existe, inyectamos ahora para que "Centros"
+  // forme parte del menú y del conjunto de vistas desde el primer render.
+  if(document.querySelector('.nav')&&document.querySelector('main')){
+    inject();
+  }else if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',inject,{once:true});
+  }else{
+    inject();
+  }
 })();
