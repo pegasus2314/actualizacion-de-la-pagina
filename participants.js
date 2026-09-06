@@ -47,6 +47,7 @@
 
   document.addEventListener('click',e=>{
     const qr=e.target.closest('[data-qr-id]');if(qr){const p=participantsCache.find(x=>x.id===qr.dataset.qrId);if(p)qrCard(p);return}
+    const participantView=e.target.closest('[data-view="participantes"]');if(participantView){setTimeout(renderParticipants,80)}
     const pairBtn=e.target.closest('[data-panel="pairing"]');if(pairBtn){setTimeout(renderPairing,0);return}
     if(e.target.closest('[data-action="generate-pairs"]'))generatePairs();
   });
