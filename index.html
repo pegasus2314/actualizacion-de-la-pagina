@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="TRD La Regional Esmeralda — plataforma oficial de inscripción y gestión de debate de la Regional 17." />
+  <title>TRD La Regional Esmeralda | Regional 17</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-orb orb-a"></div><div class="bg-orb orb-b"></div>
+  <header class="topbar">
+    <a class="brand" href="#inicio" aria-label="Regional 17 inicio">
+      <div class="brand-mark">R17</div>
+      <div><span>REGIONAL 17</span><strong>La Regional Esmeralda</strong></div>
+    </a>
+    <nav class="nav">
+      <a href="#inicio">Inicio</a><a href="#inscripcion">Inscripción</a><a href="#participantes">Participantes</a>
+      <button class="nav-admin" id="adminBtn">Administración</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="inicio" class="hero section">
+      <div class="hero-copy">
+        <span class="eyebrow">TRD · TORNEO REGIONAL DE DEBATE</span>
+        <h1>La voz que argumenta<br><em>transforma.</em></h1>
+        <p>Plataforma oficial de la Regional 17 para organizar la participación, inscripción y gestión del Torneo Regional de Debate <b>La Regional Esmeralda</b>.</p>
+        <div class="hero-actions"><a class="btn primary" href="#inscripcion">Inscribir mi equipo <span>→</span></a><a class="btn ghost" href="#participantes">Ver participantes</a></div>
+        <div class="trust"><span>● Inscripciones abiertas</span><span>Regional 17 · Monte Plata</span></div>
+      </div>
+      <div class="hero-card">
+        <div class="card-top"><span>PRÓXIMO TRD</span><span class="live-dot">● EN REGISTRO</span></div>
+        <div class="esmeralda">E</div>
+        <h2>La Regional<br>Esmeralda</h2>
+        <p>Debate · Liderazgo · Argumentación</p>
+        <div class="stats"><div><strong id="teamCount">—</strong><span>equipos</span></div><div><strong id="debaterCount">—</strong><span>debatientes</span></div></div>
+      </div>
+    </section>
+
+    <section id="inscripcion" class="section form-section">
+      <div class="section-heading"><span class="eyebrow">01 · INSCRIPCIÓN</span><h2>Registra tu equipo</h2><p>Completa los datos del equipo y sus integrantes. La organización revisará la solicitud.</p></div>
+      <form id="registrationForm" class="glass-form">
+        <div class="form-grid">
+          <label>Nombre del equipo<input name="team_name" required placeholder="Ej. Los Argumentadores" /></label>
+          <label>Centro educativo<input name="school_name" required placeholder="Nombre del centro" /></label>
+          <label>Distrito educativo<input name="district" placeholder="Ej. 17-04" /></label>
+          <label>Responsable<input name="contact_name" required placeholder="Nombre completo" /></label>
+          <label>Correo de contacto<input type="email" name="contact_email" required placeholder="correo@ejemplo.com" /></label>
+          <label>Teléfono<input name="contact_phone" placeholder="809-000-0000" /></label>
+        </div>
+        <div class="divider"><span>INTEGRANTES</span></div>
+        <div id="debaters" class="debaters"></div>
+        <button type="button" class="add-btn" id="addDebater">+ Añadir integrante</button>
+        <label class="consent"><input type="checkbox" id="consent" required /> Confirmo que los datos suministrados son correctos y autorizo su uso para la gestión del TRD.</label>
+        <div class="form-footer"><button class="btn primary" type="submit">Enviar inscripción <span>→</span></button><div id="formMessage" class="form-message"></div></div>
+      </form>
+    </section>
+
+    <section id="participantes" class="section participants">
+      <div class="section-heading"><span class="eyebrow">02 · PARTICIPANTES</span><h2>Equipos inscritos</h2><p>Consulta los equipos que forman parte de la Regional Esmeralda.</p></div>
+      <div id="teamsGrid" class="teams-grid"><div class="empty">Cargando equipos…</div></div>
+    </section>
+
+    <section id="admin" class="section admin-section hidden">
+      <div class="section-heading"><span class="eyebrow">03 · ADMINISTRACIÓN</span><h2>Centro de gestión</h2><p id="adminWelcome">Acceso restringido al personal autorizado.</p></div>
+      <div class="admin-grid">
+        <div class="admin-card"><span>Equipos</span><strong id="adminTeams">—</strong></div><div class="admin-card"><span>Debatientes</span><strong id="adminDebaters">—</strong></div><div class="admin-card"><span>Inscripciones pendientes</span><strong id="adminPending">—</strong></div>
+      </div>
+      <div class="admin-table-wrap"><table><thead><tr><th>Equipo</th><th>Centro educativo</th><th>Distrito</th><th>Estado</th></tr></thead><tbody id="adminTable"></tbody></table></div>
+    </section>
+  </main>
+
+  <footer><div><b>REGIONAL 17</b><span> · Torneo Regional de Debate La Regional Esmeralda</span></div><span>© 2026 Regional 17</span></footer>
+
+  <dialog id="loginDialog"><form method="dialog" id="loginForm" class="login-card"><button type="button" class="close" id="closeLogin">×</button><span class="eyebrow">PERSONAL AUTORIZADO</span><h2>Administración</h2><p>Inicia sesión para gestionar el torneo.</p><label>Correo<input id="loginEmail" type="email" required /></label><label>Contraseña<input id="loginPassword" type="password" required /></label><button class="btn primary" type="submit">Entrar</button><div id="loginMessage" class="form-message"></div></form></dialog>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+</body>
+</html>
