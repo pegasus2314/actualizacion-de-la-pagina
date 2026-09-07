@@ -20,7 +20,7 @@
     const a=document.createElement('a');
     a.href='#centros';
     a.dataset.view='centros';
-    a.innerHTML='⌂ <span>Centros</span>';
+    a.innerHTML='▦ <span>Centros</span>';
     nav.appendChild(a);
     return true;
   };
@@ -38,8 +38,8 @@
     document.querySelectorAll('.view-section').forEach(s=>s.classList.add('view-hidden'));
     section.classList.remove('view-hidden');
     document.body.classList.add('viewing-section');
-    document.querySelectorAll('[data-view]').forEach(a=>a.classList.toggle('active',a.dataset.view==='centros'&&a.closest('.nav')));
-    ensureNav();
+    document.querySelectorAll('.nav [data-view]').forEach(a=>a.classList.toggle('active',a.dataset.view==='centros'));
+    render();
   }
 
   function hide(){
@@ -49,7 +49,8 @@
 
   function inject(){
     ensureNav();
-    if(document.getElementById('centros'))return;
+    const existing=document.getElementById('centros');
+    if(existing){render();return;}
     const main=document.querySelector('main');
     if(!main)return;
     const section=document.createElement('section');
@@ -62,8 +63,8 @@
       </div>
       <div class="centros-summary"><div><strong>${centers.length}</strong><span>centros registrados</span></div><div><strong>5</strong><span>distritos educativos</span></div></div>
       <div class="centros-filters" role="tablist" aria-label="Filtrar por distrito">
-        <button class="btn small primary" data-centro-filter="all">Todos</button>
-        ${districts.map(d=>`<button class="btn small outline" data-centro-filter="${d.id}">${d.id} · ${d.name}</button>`).join('')}
+        <button type="button" class="btn small primary" data-centro-filter="all">Todos</button>
+        ${districts.map(d=>`<button type="button" class="btn small outline" data-centro-filter="${d.id}">${d.id} · ${d.name}</button>`).join('')}
       </div>
       <div id="centrosGrid" class="centros-grid"></div>
       <div class="centros-source-note"><strong>Fuente:</strong> catálogo de centros de secundaria y técnico-profesionales verificados con referencias públicas del MINERD/DGES. La vista está organizada por los cinco distritos de la Regional 17.</div>`;
@@ -73,31 +74,33 @@
   }
 
   document.addEventListener('click',e=>{
-    const link=e.target.closest('[data-view]');
-    if(link&&link.dataset.view==='centros'){
+    const link=e.target.closest('[data-view="centros"]');
+    if(link){
       e.preventDefault();
-      if(!document.getElementById('centros'))inject();
+      e.stopPropagation();
+      inject();
       history.pushState({},'', '#centros');
       activate();
       return;
     }
     const filter=e.target.closest('[data-centro-filter]');
     if(filter){
+      e.preventDefault();
       document.querySelectorAll('[data-centro-filter]').forEach(b=>{b.classList.toggle('primary',b===filter);b.classList.toggle('outline',b!==filter)});
       render(filter.dataset.centroFilter);
       return;
     }
-    if(link)hide();
-  });
+  },true);
 
   window.addEventListener('popstate',()=>location.hash==='#centros'?activate():hide());
   window.addEventListener('hashchange',()=>location.hash==='#centros'?activate():hide());
 
-  const boot=()=>{inject();ensureNav();};
+  const boot=()=>{inject();ensureNav();if(location.hash==='#centros')activate();};
   boot();
   document.addEventListener('DOMContentLoaded',boot,{once:true});
   const navWatch=setInterval(()=>{
-    if(ensureNav() && document.querySelector('[data-view="centros"]'))clearInterval(navWatch);
+    ensureNav();
+    if(document.querySelector('[data-view="centros"]')){inject();clearInterval(navWatch);}
   },100);
   setTimeout(()=>clearInterval(navWatch),10000);
 })();
