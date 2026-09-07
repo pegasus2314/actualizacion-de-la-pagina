@@ -33,11 +33,10 @@
     const style=document.createElement('style');style.id='trd-admin-access-fix';style.textContent=`#adminBtn{cursor:pointer!important;pointer-events:auto!important;position:relative!important;z-index:20!important}.login-dialog{z-index:9999}`;document.head.appendChild(style);
     document.addEventListener('click',e=>{
       const btn=e.target.closest('#adminBtn');if(!btn)return;
-      e.preventDefault();e.stopImmediatePropagation();
       const dialog=document.getElementById('loginDialog');
       if(dialog){if(typeof dialog.showModal==='function'&&!dialog.open)dialog.showModal();return;}
       if(typeof window.adminLogin==='function')window.adminLogin(e);
-    },true);
+    });
   }
 
   function ensureShell(){
