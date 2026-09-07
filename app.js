@@ -2,19 +2,48 @@ document.write('<script src="https://raw.githubusercontent.com/pegasus2314/actua
 document.write('<script src="https://raw.githubusercontent.com/pegasus2314/actualizacion-de-la-pagina/a9f1f24ad70bb41e4e2b5f1399519307dcede875/centros.js"><\\/script>');
 
 (function(){
-  if(!document.getElementById('trd-home-panel-fix')){
-    var style=document.createElement('style');style.id='trd-home-panel-fix';style.textContent=`
-      .home-intro .competition-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:stretch}
-      .home-intro .competition-card{display:flex!important;flex-direction:column;align-items:flex-start;min-width:0;min-height:230px;height:100%;box-sizing:border-box;padding:26px!important;border:1px solid rgba(182,231,255,.12)!important;border-radius:20px!important;background:linear-gradient(145deg,#102b3f,#091d2d)!important;box-shadow:0 14px 34px rgba(0,0,0,.18)!important;color:#eef8fb!important;text-decoration:none!important;overflow:hidden;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease,background .2s ease!important}
-      .home-intro .competition-card:hover{transform:translateY(-4px)!important;border-color:rgba(25,220,229,.42)!important;box-shadow:0 20px 42px rgba(0,0,0,.24)!important;background:linear-gradient(145deg,#12364c,#0a2132)!important}
-      .home-intro .competition-card>span{flex:0 0 auto;width:48px!important;height:48px!important;display:grid!important;place-items:center!important;margin:0!important;border-radius:13px!important;background:rgba(25,220,229,.08)!important;border:1px solid rgba(25,220,229,.28)!important;color:var(--cyan)!important;font-size:21px!important}
-      .home-intro .competition-card b{display:block!important;margin:20px 0 7px!important;font-family:'Barlow Condensed',Barlow,sans-serif!important;font-size:30px!important;line-height:1!important;color:#fff!important}
-      .home-intro .competition-card small{display:block!important;margin:0!important;max-width:440px!important;color:#9bb1bd!important;font-size:13px!important;line-height:1.55!important}
-      .home-intro .competition-card strong{display:inline-flex!important;align-items:center!important;gap:9px!important;margin-top:auto!important;padding:11px 0 0!important;color:var(--cyan)!important;font-size:12px!important;font-weight:800!important}
-      .home-intro .competition-card strong::after{width:25px!important;height:1px!important;background:currentColor!important}
-      @media(max-width:800px){.home-intro .competition-grid{grid-template-columns:1fr!important;gap:14px}.home-intro .competition-card{min-height:205px!important;padding:23px!important}}
-    `;document.head.appendChild(style);
+  'use strict';
+
+  /*
+   * The page previously had two routers: the one in index.html and another
+   * one here. They competed for the same clicks/hash changes. We keep one
+   * router here and ignore only the old inline router when it registers.
+   */
+  var originalDocumentAdd=document.addEventListener.bind(document);
+  var originalWindowAdd=window.addEventListener.bind(window);
+
+  document.addEventListener=function(type,listener,options){
+    if(type==='click' && typeof listener==='function'){
+      var src=Function.prototype.toString.call(listener);
+      if(src.indexOf('allowed.has(view)')!==-1 || src.indexOf("location.hash.slice(1)||'inicio'")!==-1){return;}
+    }
+    return originalDocumentAdd(type,listener,options);
+  };
+
+  window.addEventListener=function(type,listener,options){
+    if(type==='hashchange' && typeof listener==='function'){
+      var src=Function.prototype.toString.call(listener);
+      if(src.indexOf('showView(location.hash.slice(1)||\'inicio\',false)')!==-1){return;}
+    }
+    return originalWindowAdd(type,listener,options);
+  };
+
+  function addStyle(id,css){
+    if(document.getElementById(id))return;
+    var s=document.createElement('style');s.id=id;s.textContent=css;document.head.appendChild(s);
   }
+
+  addStyle('trd-home-panel-fix',`
+    .home-intro .competition-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:stretch}
+    .home-intro .competition-card{display:flex!important;flex-direction:column;align-items:flex-start;min-width:0;min-height:230px;height:100%;box-sizing:border-box;padding:26px!important;border:1px solid rgba(182,231,255,.12)!important;border-radius:20px!important;background:linear-gradient(145deg,#102b3f,#091d2d)!important;box-shadow:0 14px 34px rgba(0,0,0,.18)!important;color:#eef8fb!important;text-decoration:none!important;overflow:hidden;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease,background .2s ease!important}
+    .home-intro .competition-card:hover{transform:translateY(-4px)!important;border-color:rgba(25,220,229,.42)!important;box-shadow:0 20px 42px rgba(0,0,0,.24)!important;background:linear-gradient(145deg,#12364c,#0a2132)!important}
+    .home-intro .competition-card>span{flex:0 0 auto;width:48px!important;height:48px!important;display:grid!important;place-items:center!important;margin:0!important;border-radius:13px!important;background:rgba(25,220,229,.08)!important;border:1px solid rgba(25,220,229,.28)!important;color:var(--cyan)!important;font-size:21px!important}
+    .home-intro .competition-card b{display:block!important;margin:20px 0 7px!important;font-family:'Barlow Condensed',Barlow,sans-serif!important;font-size:30px!important;line-height:1!important;color:#fff!important}
+    .home-intro .competition-card small{display:block!important;margin:0!important;max-width:440px!important;color:#9bb1bd!important;font-size:13px!important;line-height:1.55!important}
+    .home-intro .competition-card strong{display:inline-flex!important;align-items:center!important;gap:9px!important;margin-top:auto!important;padding:11px 0 0!important;color:var(--cyan)!important;font-size:12px!important;font-weight:800!important}
+    .home-intro .competition-card strong::after{width:25px!important;height:1px!important;background:currentColor!important}
+    @media(max-width:800px){.home-intro .competition-grid{grid-template-columns:1fr!important;gap:14px}.home-intro .competition-card{min-height:205px!important;padding:23px!important}}
+  `);
 
   var icons={
     inicio:'<svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V21h13V9.5"/><path d="M9.5 21v-5.5h5V21"/></svg>',
@@ -25,88 +54,122 @@ document.write('<script src="https://raw.githubusercontent.com/pegasus2314/actua
     centros:'<svg viewBox="0 0 24 24"><path d="M4 21V5.5L12 3l8 2.5V21"/><path d="M8 9h2M14 9h2M8 13h2M14 13h2M10 21v-4h4v4"/></svg>'
   };
 
-  if(!document.getElementById('trd-nav-icon-fix')){
-    var navStyle=document.createElement('style');navStyle.id='trd-nav-icon-fix';navStyle.textContent=`
-      .nav>a{display:inline-flex!important;align-items:center!important;gap:8px!important}
-      .nav>a .trd-nav-icon{display:grid;place-items:center;width:19px;height:19px;flex:0 0 19px;color:currentColor;opacity:.9}
-      .nav>a .trd-nav-icon svg{width:18px;height:18px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-      .nav>a.active .trd-nav-icon,.nav>a:hover .trd-nav-icon{color:var(--cyan)}
-    `;document.head.appendChild(navStyle);
+  addStyle('trd-nav-icon-fix',`
+    .nav>a{display:inline-flex!important;align-items:center!important;gap:8px!important}
+    .nav>a .trd-nav-icon{display:grid;place-items:center;width:19px;height:19px;flex:0 0 19px;color:currentColor;opacity:.9}
+    .nav>a .trd-nav-icon svg{width:18px;height:18px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .nav>a.active .trd-nav-icon,.nav>a:hover .trd-nav-icon{color:var(--cyan)}
+  `);
+
+  function ensureCentrosNav(){
+    var nav=document.querySelector('.nav');
+    if(!nav || nav.querySelector('[data-view="centros"]'))return;
+    var a=document.createElement('a');
+    a.href='#centros';
+    a.dataset.view='centros';
+    a.innerHTML='<span class="trd-nav-icon" aria-hidden="true">'+icons.centros+'</span><span>Centros educativos</span>';
+    nav.appendChild(a);
   }
 
   function ensureNavIcons(){
-    document.querySelectorAll('.nav>a[data-view]').forEach(function(a){var key=a.dataset.view;if(!icons[key]||a.querySelector('.trd-nav-icon'))return;var old=a.firstChild;if(old&&old.nodeType===3)old.remove();var icon=document.createElement('span');icon.className='trd-nav-icon';icon.setAttribute('aria-hidden','true');icon.innerHTML=icons[key];a.insertBefore(icon,a.firstChild)});
+    document.querySelectorAll('.nav>a[data-view]').forEach(function(a){
+      var key=a.dataset.view;
+      if(!icons[key] || a.querySelector('.trd-nav-icon'))return;
+      var first=a.firstChild;
+      if(first && first.nodeType===3)first.remove();
+      var icon=document.createElement('span');
+      icon.className='trd-nav-icon';
+      icon.setAttribute('aria-hidden','true');
+      icon.innerHTML=icons[key];
+      a.insertBefore(icon,a.firstChild);
+    });
   }
 
-  function ensureCentrosNav(){
-    var nav=document.querySelector('.nav');if(!nav||nav.querySelector('[data-view="centros"]'))return;
-    var a=document.createElement('a');a.href='#centros';a.dataset.view='centros';a.innerHTML='<span class="trd-nav-icon" aria-hidden="true">'+icons.centros+'</span><span>Centros educativos</span>';nav.appendChild(a);
-  }
+  function allViews(){return Array.prototype.slice.call(document.querySelectorAll('.view-section'));}
 
-  function directView(id,writeHash){
+  function openView(id,updateHash){
     var section=document.getElementById(id);
     if(!section)return false;
-    document.querySelectorAll('.view-section').forEach(function(s){s.classList.toggle('view-hidden',s.id!==id)});
+    allViews().forEach(function(s){s.classList.toggle('view-hidden',s.id!==id)});
     document.querySelectorAll('.nav>a[data-view]').forEach(function(a){a.classList.toggle('active',a.dataset.view===id)});
     document.body.classList.add('viewing-section');
-    if(writeHash&&location.hash!=='#'+id)history.pushState(null,'','#'+id);
-    window.scrollTo({top:0,behavior:'smooth'});
+    if(updateHash && location.hash!=='#'+id)history.pushState(null,'','#'+id);
+    window.scrollTo(0,0);
     return true;
   }
 
-  // Router único en fase de captura. Evita que el router antiguo de index.html bloquee las vistas.
-  document.addEventListener('click',function(e){
-    var link=e.target.closest&&e.target.closest('.nav>a[data-view]');
+  function openAdmin(){
+    var admin=document.getElementById('admin');
+    if(!admin)return false;
+    admin.classList.remove('hidden');
+    allViews().forEach(function(s){s.classList.toggle('view-hidden',s.id!=='admin')});
+    document.querySelectorAll('.nav>a[data-view]').forEach(function(a){a.classList.remove('active')});
+    document.body.classList.add('viewing-section');
+    window.scrollTo(0,0);
+    return true;
+  }
+
+  function route(id,updateHash){
+    if(id==='admin')return openAdmin();
+    if(!id)id='inicio';
+    return openView(id,updateHash);
+  }
+
+  originalDocumentAdd('click',function(e){
+    var link=e.target.closest && e.target.closest('.nav>a[data-view]');
     if(!link)return;
     var id=link.dataset.view;
-    if(!id||id==='admin')return;
-    var section=document.getElementById(id);
-    if(!section)return;
+    if(!id || !document.getElementById(id))return;
     e.preventDefault();
-    e.stopImmediatePropagation();
-    directView(id,true);
+    e.stopPropagation();
+    route(id,true);
   },true);
 
-  function bindAdminButton(){
-    var btn=document.getElementById('adminBtn'),dialog=document.getElementById('loginDialog');if(!btn||!dialog)return;
-    if(btn.dataset.trdAdminBound!=='1'){
-      btn.dataset.trdAdminBound='1';btn.type='button';
-      btn.addEventListener('click',function(){if(typeof dialog.showModal==='function'&&!dialog.open)dialog.showModal()});
+  originalWindowAdd('hashchange',function(){
+    var id=location.hash.replace(/^#/,'')||'inicio';
+    route(id,false);
+  });
+
+  function bindAdmin(){
+    var btn=document.getElementById('adminBtn');
+    var dialog=document.getElementById('loginDialog');
+    if(btn && dialog && btn.dataset.trdBound!=='1'){
+      btn.dataset.trdBound='1';
+      btn.type='button';
+      btn.addEventListener('click',function(){
+        if(!dialog.open && typeof dialog.showModal==='function')dialog.showModal();
+      });
+    }
+    var form=document.getElementById('loginForm');
+    if(form && typeof window.adminLogin==='function' && form.dataset.trdBound!=='1'){
+      form.dataset.trdBound='1';
+      form.addEventListener('submit',window.adminLogin);
+    }
+    var close=document.getElementById('closeLogin');
+    if(close && dialog && close.dataset.trdBound!=='1'){
+      close.dataset.trdBound='1';
+      close.addEventListener('click',function(){dialog.close()});
     }
   }
 
-  function bindAdminLogin(){
-    var form=document.getElementById('loginForm');if(!form||typeof adminLogin!=='function')return;
-    if(form.dataset.trdAdminLoginBound!=='1'){form.dataset.trdAdminLoginBound='1';form.addEventListener('submit',adminLogin)}
-    var close=document.getElementById('closeLogin'),dialog=document.getElementById('loginDialog');
-    if(close&&dialog&&close.dataset.trdCloseBound!=='1'){close.dataset.trdCloseBound='1';close.addEventListener('click',function(){dialog.close()})}
-  }
-
-  function revealAdmin(){
-    if(location.hash!=='#admin')return;
-    var admin=document.getElementById('admin');if(!admin)return;
-    admin.classList.remove('hidden');
-    document.querySelectorAll('.view-section').forEach(function(section){section.classList.toggle('view-hidden',section.id!=='admin')});
-    document.body.classList.add('viewing-section');
-    window.scrollTo({top:0,behavior:'smooth'});
-  }
-
   function start(){
-    ensureCentrosNav();ensureNavIcons();bindAdminButton();bindAdminLogin();
-    if(location.hash==='#admin')revealAdmin();
-    else if(location.hash && location.hash!=='#inicio')directView(location.hash.slice(1),false);
+    ensureCentrosNav();
+    ensureNavIcons();
+    bindAdmin();
+    var id=location.hash.replace(/^#/,'')||'inicio';
+    if(id==='admin')openAdmin();
+    else if(document.getElementById(id))openView(id,false);
+    else openView('inicio',false);
   }
 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-  var tries=0,timer=setInterval(function(){
-    ensureCentrosNav();ensureNavIcons();bindAdminButton();bindAdminLogin();
-    if(location.hash==='#admin')revealAdmin();
-    else if(location.hash && location.hash!=='#inicio')directView(location.hash.slice(1),false);
+  if(document.readyState==='loading')originalDocumentAdd('DOMContentLoaded',start,{once:true});
+  else start();
+
+  var tries=0;
+  var timer=setInterval(function(){
+    ensureCentrosNav();
+    ensureNavIcons();
+    bindAdmin();
     if(++tries>80)clearInterval(timer);
   },100);
-
-  window.addEventListener('hashchange',function(){
-    if(location.hash==='#admin')revealAdmin();
-    else if(location.hash)directView(location.hash.slice(1),false);
-  });
 })();
