@@ -41,6 +41,24 @@ document.write('<script src="https://raw.githubusercontent.com/pegasus2314/actua
   }
   ensureCentrosNav();
 
+  function openCentros(){
+    var section=document.getElementById('centros');
+    if(!section)return false;
+    document.querySelectorAll('.view-section').forEach(function(s){s.classList.add('view-hidden')});
+    section.classList.remove('view-hidden');
+    document.querySelectorAll('.nav>a[data-view]').forEach(function(a){a.classList.toggle('active',a.dataset.view==='centros')});
+    document.body.classList.add('viewing-section');
+    return true;
+  }
+
+  // Capturamos el clic antes que el router antiguo para que Centros siempre abra su vista.
+  document.addEventListener('click',function(e){
+    var link=e.target.closest&&e.target.closest('.nav>a[data-view="centros"]');
+    if(!link)return;
+    e.preventDefault();e.stopImmediatePropagation();
+    if(openCentros()){history.pushState({},'', '#centros');window.scrollTo({top:0,behavior:'smooth'})}
+  },true);
+
   function bindAdminButton(){
     var btn=document.getElementById('adminBtn'),dialog=document.getElementById('loginDialog');if(!btn||!dialog)return;
     if(btn.dataset.trdAdminBound!=='1'){btn.dataset.trdAdminBound='1';btn.type='button';btn.addEventListener('click',function(){if(typeof dialog.showModal==='function'&&!dialog.open)dialog.showModal()})}
@@ -57,8 +75,8 @@ document.write('<script src="https://raw.githubusercontent.com/pegasus2314/actua
     admin.classList.remove('hidden');admin.classList.remove('view-hidden');document.querySelectorAll('.view-section').forEach(function(section){if(section.id!=='admin')section.classList.add('view-hidden')});document.body.classList.add('viewing-section');window.scrollTo({top:0,behavior:'smooth'});
   }
 
-  function start(){ensureCentrosNav();bindAdminButton();bindAdminLogin();revealAdmin()}
+  function start(){ensureCentrosNav();bindAdminButton();bindAdminLogin();revealAdmin();if(location.hash==='#centros')openCentros()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-  var tries=0,timer=setInterval(function(){ensureCentrosNav();bindAdminButton();bindAdminLogin();revealAdmin();if(++tries>50)clearInterval(timer)},100);
-  window.addEventListener('hashchange',revealAdmin);
+  var tries=0,timer=setInterval(function(){ensureCentrosNav();bindAdminButton();bindAdminLogin();revealAdmin();if(location.hash==='#centros')openCentros();if(++tries>50)clearInterval(timer)},100);
+  window.addEventListener('hashchange',function(){if(location.hash==='#centros')openCentros();else revealAdmin()});
 })();
