@@ -10,6 +10,21 @@
   const districts={'17-01':'Yamasá','17-02':'Monte Plata','17-03':'Bayaguana','17-04':'Sabana Grande de Boyá','17-05':'Peralvillo'};
   let centers=JSON.parse(localStorage.getItem('trd_centros')||'null')||baseCenters.slice();
 
+  function injectHomePanelStyles(){
+    if(document.getElementById('trd-home-panel-fix'))return;
+    const style=document.createElement('style');style.id='trd-home-panel-fix';style.textContent=`
+      .home-intro .competition-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:stretch}
+      .home-intro .competition-card{display:flex!important;flex-direction:column;align-items:flex-start;min-width:0;min-height:230px;height:100%;box-sizing:border-box;padding:26px!important;border:1px solid rgba(182,231,255,.12)!important;border-radius:20px!important;background:linear-gradient(145deg,#102b3f,#091d2d)!important;box-shadow:0 14px 34px rgba(0,0,0,.18)!important;color:#eef8fb!important;text-decoration:none!important;overflow:hidden;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease,background .2s ease!important}
+      .home-intro .competition-card:hover{transform:translateY(-4px)!important;border-color:rgba(25,220,229,.42)!important;box-shadow:0 20px 42px rgba(0,0,0,.24)!important;background:linear-gradient(145deg,#12364c,#0a2132)!important}
+      .home-intro .competition-card>span{flex:0 0 auto;width:48px!important;height:48px!important;display:grid!important;place-items:center!important;margin:0!important;border-radius:13px!important;background:rgba(25,220,229,.08)!important;border:1px solid rgba(25,220,229,.28)!important;color:var(--cyan)!important;font-size:21px!important}
+      .home-intro .competition-card b{display:block!important;margin:20px 0 7px!important;font-family:'Barlow Condensed',Barlow,sans-serif!important;font-size:30px!important;line-height:1!important;color:#fff!important}
+      .home-intro .competition-card small{display:block!important;margin:0!important;max-width:440px!important;color:#9bb1bd!important;font-size:13px!important;line-height:1.55!important}
+      .home-intro .competition-card strong{display:inline-flex!important;align-items:center!important;gap:9px!important;margin-top:auto!important;padding:11px 0 0!important;color:var(--cyan)!important;font-size:12px!important;font-weight:800!important}
+      .home-intro .competition-card strong::after{width:25px!important;height:1px!important;background:currentColor!important}
+      @media(max-width:800px){.home-intro .competition-grid{grid-template-columns:1fr!important;gap:14px}.home-intro .competition-card{min-height:205px!important;padding:23px!important}}
+    `;document.head.appendChild(style);
+  }
+
   function ensureShell(){
     const nav=document.querySelector('.nav');
     if(nav&&!nav.querySelector('[data-view="centros"]')){
@@ -30,19 +45,16 @@
     const list=filter==='all'?centers:centers.filter(c=>c[0]===filter);
     const count=document.getElementById('centrosCount'),visible=document.getElementById('centrosVisible');
     if(count)count.textContent=centers.length;if(visible)visible.textContent=list.length;
-    grid.innerHTML=list.map((c,i)=>'<article class="centro-card"><div class="centro-card-top"><span class="centro-district-badge">'+c[0]+' · '+districts[c[0]]+'</span><span class="centro-code">'+c[1]+'</span></div><div class="centro-card-icon">▦</div><h3>'+c[2]+'</h3><div class="centro-card-meta"><span>Educación secundaria</span><span>Regional 17</span></div></article>').join('');
+    grid.innerHTML=list.map(c=>'<article class="centro-card"><div class="centro-card-top"><span class="centro-district-badge">'+c[0]+' · '+districts[c[0]]+'</span><span class="centro-code">'+c[1]+'</span></div><div class="centro-card-icon">▦</div><h3>'+c[2]+'</h3><div class="centro-card-meta"><span>Educación secundaria</span><span>Regional 17</span></div></article>').join('');
   }
 
-  function openAdd(){
-    const dialog=document.getElementById('centroDialog');if(dialog){dialog.showModal();setTimeout(()=>document.getElementById('centroNombre')?.focus(),50);}
-  }
+  function openAdd(){const dialog=document.getElementById('centroDialog');if(dialog){dialog.showModal();setTimeout(()=>document.getElementById('centroNombre')?.focus(),50);}}
   function closeAdd(){document.getElementById('centroDialog')?.close();}
   function saveCenter(){
     const district=document.getElementById('centroDistrito')?.value,code=document.getElementById('centroCodigo')?.value.trim(),name=document.getElementById('centroNombre')?.value.trim();
     if(!district||!code||!name)return;
     if(centers.some(c=>c[1]===code)){alert('Ya existe un centro con ese código.');return;}
-    centers.push([district,code,name]);localStorage.setItem('trd_centros',JSON.stringify(centers));
-    document.getElementById('centroForm')?.reset();closeAdd();render('all');
+    centers.push([district,code,name]);localStorage.setItem('trd_centros',JSON.stringify(centers));document.getElementById('centroForm')?.reset();closeAdd();render('all');
   }
 
   function showCentros(push){
@@ -54,6 +66,7 @@
   }
   function loadLegacy(){if(document.querySelector('script[data-trd-legacy]'))return;const s=document.createElement('script');s.src=LEGACY_APP;s.dataset.trdLegacy='1';document.head.appendChild(s);}
 
+  injectHomePanelStyles();
   ensureShell();
   document.addEventListener('click',e=>{
     const link=e.target.closest('[data-view="centros"]');if(link){e.preventDefault();e.stopImmediatePropagation();showCentros(true);return;}
