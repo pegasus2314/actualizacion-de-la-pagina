@@ -1,31 +1,30 @@
-document.write('<script src="https://raw.githubusercontent.com/pegasus2314/actualizacion-de-la-pagina/d452a602318416ad2e818078ff27592284f148df/app.js"><\\/script>');
-document.write('<script src="https://raw.githubusercontent.com/pegasus2314/actualizacion-de-la-pagina/a9f1f24ad70bb41e4e2b5f1399519307dcede875/centros.js"><\\/script>');
+document.write('<script src="https://raw.githubusercontent.com/pegasus2314/actualizacion-de-la-pagina/d452a602318416ad2e818078ff27592284f148df/app.js"><\/script>');
+document.write('<script src="https://raw.githubusercontent.com/pegasus2314/actualizacion-de-la-pagina/a9f1f24ad70bb41e4e2b5f1399519307dcede875/centros.js"><\/script>');
 
 (function(){
   'use strict';
 
-  /*
-   * The page previously had two routers: the one in index.html and another
-   * one here. They competed for the same clicks/hash changes. We keep one
-   * router here and ignore only the old inline router when it registers.
-   */
-  var originalDocumentAdd=document.addEventListener.bind(document);
-  var originalWindowAdd=window.addEventListener.bind(window);
+  var nativeDocumentAdd=document.addEventListener.bind(document);
+  var nativeWindowAdd=window.addEventListener.bind(window);
 
+  /* Neutraliza únicamente el router inline antiguo de index.html. */
   document.addEventListener=function(type,listener,options){
     if(type==='click' && typeof listener==='function'){
       var src=Function.prototype.toString.call(listener);
-      if(src.indexOf('allowed.has(view)')!==-1 || src.indexOf("location.hash.slice(1)||'inicio'")!==-1){return;}
+      if(src.indexOf('const sections=')!==-1 && src.indexOf('allowed=new Set')!==-1 && src.indexOf('showView')!==-1)return;
     }
-    return originalDocumentAdd(type,listener,options);
+    return nativeDocumentAdd(type,listener,options);
   };
 
+  function isOldRouter(listener){
+    if(typeof listener!=='function')return false;
+    var src=Function.prototype.toString.call(listener);
+    return src.indexOf("showView(location.hash.slice(1)||'inicio',false)")!==-1;
+  }
+
   window.addEventListener=function(type,listener,options){
-    if(type==='hashchange' && typeof listener==='function'){
-      var src=Function.prototype.toString.call(listener);
-      if(src.indexOf('showView(location.hash.slice(1)||\'inicio\',false)')!==-1){return;}
-    }
-    return originalWindowAdd(type,listener,options);
+    if((type==='hashchange'||type==='popstate') && isOldRouter(listener))return;
+    return nativeWindowAdd(type,listener,options);
   };
 
   function addStyle(id,css){
@@ -63,12 +62,10 @@ document.write('<script src="https://raw.githubusercontent.com/pegasus2314/actua
 
   function ensureCentrosNav(){
     var nav=document.querySelector('.nav');
-    if(!nav || nav.querySelector('[data-view="centros"]'))return;
-    var a=document.createElement('a');
-    a.href='#centros';
-    a.dataset.view='centros';
+    if(!nav)return;
+    var a=nav.querySelector('[data-view="centros"]');
+    if(!a)return;
     a.innerHTML='<span class="trd-nav-icon" aria-hidden="true">'+icons.centros+'</span><span>Centros educativos</span>';
-    nav.appendChild(a);
   }
 
   function ensureNavIcons(){
@@ -110,13 +107,14 @@ document.write('<script src="https://raw.githubusercontent.com/pegasus2314/actua
   }
 
   function route(id,updateHash){
+    id=(id||'inicio').replace(/^#/,'');
     if(id==='admin')return openAdmin();
-    if(!id)id='inicio';
+    if(!document.getElementById(id))id='inicio';
     return openView(id,updateHash);
   }
 
-  originalDocumentAdd('click',function(e){
-    var link=e.target.closest && e.target.closest('.nav>a[data-view]');
+  nativeDocumentAdd('click',function(e){
+    var link=e.target.closest && e.target.closest('[data-view]');
     if(!link)return;
     var id=link.dataset.view;
     if(!id || !document.getElementById(id))return;
@@ -125,51 +123,23 @@ document.write('<script src="https://raw.githubusercontent.com/pegasus2314/actua
     route(id,true);
   },true);
 
-  originalWindowAdd('hashchange',function(){
-    var id=location.hash.replace(/^#/,'')||'inicio';
-    route(id,false);
-  });
-
-  function bindAdmin(){
-    var btn=document.getElementById('adminBtn');
-    var dialog=document.getElementById('loginDialog');
-    if(btn && dialog && btn.dataset.trdBound!=='1'){
-      btn.dataset.trdBound='1';
-      btn.type='button';
-      btn.addEventListener('click',function(){
-        if(!dialog.open && typeof dialog.showModal==='function')dialog.showModal();
-      });
-    }
-    var form=document.getElementById('loginForm');
-    if(form && typeof window.adminLogin==='function' && form.dataset.trdBound!=='1'){
-      form.dataset.trdBound='1';
-      form.addEventListener('submit',window.adminLogin);
-    }
-    var close=document.getElementById('closeLogin');
-    if(close && dialog && close.dataset.trdBound!=='1'){
-      close.dataset.trdBound='1';
-      close.addEventListener('click',function(){dialog.close()});
-    }
-  }
+  nativeWindowAdd('hashchange',function(){route(location.hash.replace(/^#/,'')||'inicio',false)});
+  nativeWindowAdd('popstate',function(){route(location.hash.replace(/^#/,'')||'inicio',false)});
 
   function start(){
     ensureCentrosNav();
     ensureNavIcons();
-    bindAdmin();
-    var id=location.hash.replace(/^#/,'')||'inicio';
-    if(id==='admin')openAdmin();
-    else if(document.getElementById(id))openView(id,false);
-    else openView('inicio',false);
+    route(location.hash.replace(/^#/,'')||'inicio',false);
   }
 
-  if(document.readyState==='loading')originalDocumentAdd('DOMContentLoaded',start,{once:true});
+  if(document.readyState==='loading')nativeDocumentAdd('DOMContentLoaded',start,{once:true});
   else start();
 
   var tries=0;
   var timer=setInterval(function(){
     ensureCentrosNav();
     ensureNavIcons();
-    bindAdmin();
-    if(++tries>80)clearInterval(timer);
+    tries++;
+    if((document.getElementById('centros')&&tries>10)||tries>80)clearInterval(timer);
   },100);
 })();
