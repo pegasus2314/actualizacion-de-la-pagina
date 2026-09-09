@@ -97,10 +97,6 @@
     modal.hidden=false;
   }
 
-  // Mostrar el modal únicamente cuando #formMessage CAMBIA a un mensaje de éxito.
-  // Si el usuario cambia de apartado, el mismo texto permanece en el DOM y ya no
-  // vuelve a disparar la notificación. Un nuevo envío puede dispararla nuevamente
-  // porque el mensaje cambia y luego vuelve a éxito.
   let lastRegistrationMessage='';
   function checkRegistrationMessage(){
     const message=document.querySelector('#formMessage');
@@ -123,4 +119,12 @@
   roleScript.src='role-access.js';
   roleScript.async=false;
   document.head.appendChild(roleScript);
+
+  // Refuerzo de las pestañas PARTICIPANTES / EQUIPOS.
+  // Se carga después de participants-details.js para evitar que estilos globales
+  // vuelvan a mostrar ambos paneles a la vez.
+  const tabsFix=document.createElement('script');
+  tabsFix.src='participants-tabs-fix.js';
+  tabsFix.async=false;
+  document.head.appendChild(tabsFix);
 })();
