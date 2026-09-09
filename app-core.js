@@ -111,14 +111,52 @@ async function setTeamStatus(id,status){
 }
 
 async function showTeamDetails(id){
-  const [{data:t,error:tError},{data:coach},{data:debaters}]=await Promise.all([
+  const [{data:t,error:tError},{data:coach,error:coachError},{data:debaters,error:debatersError}]=await Promise.all([
     db.from('esmeralda_teams').select('*').eq('id',id).maybeSingle(),
     db.from('esmeralda_coaches').select('*').eq('team_id',id).maybeSingle(),
     db.from('esmeralda_debaters').select('full_name,email,role').eq('team_id',id).order('created_at')
   ]);
   if(tError||!t){alert('Equipo no encontrado.');return}
-  let d=document.getElementById('teamDetailDialog');if(!d){d=document.createElement('dialog');d.id='teamDetailDialog';document.body.appendChild(d)}
-  d.innerHTML=`<div class="login-card team-detail-dialog"><button type="button" class="close" data-action="close-detail">×</button><span class="eyebrow">FICHA DEL EQUIPO</span><h2>${esc(t.team_name)}</h2><p><b>Centro:</b> ${esc(t.school_name)}<br><b>Distrito:</b> ${esc(t.district||'—')}<br><b>Responsable:</b> ${esc(t.contact_name||'—')}<br><b>Correo:</b> ${esc(t.contact_email||'—')}<br><b>Teléfono:</b> ${esc(t.contact_phone||'—')}<br><b>Estado:</b> ${statusLabel(t.status)}</p><hr><h3>Docente Coach</h3><p>${coach?`${esc(coach.full_name)} · ${esc(coach.email)}${coach.phone?' · '+esc(coach.phone):''}`:'No registrado'}</p><h3>Integrantes</h3><ul>${(debaters||[]).map(x=>`<li>${esc(x.full_name)} · ${x.role==='alternate'?'Suplente':'Debatiente'}${x.email?' · '+esc(x.email):''}</li>`).join('')||'<li>Sin integrantes</li>'}</ul><div class="form-footer">${t.status!=='approved'?`<button class="btn primary" data-action="approve" data-id="${t.id}">Aprobar equipo</button>`:''}${t.status!=='rejected'?`<button class="btn danger" data-action="reject" data-id="${t.id}">Rechazar</button>`:''}</div></div>`;
+  if(coachError)console.error('showTeamDetails coach',coachError);
+  if(debatersError)console.error('showTeamDetails debaters',debatersError);
+  let d=document.getElementById('teamDetailDialog');
+  if(!d){d=document.createElement('dialog');d.id='teamDetailDialog';document.body.appendChild(d)}
+  const members=debaters||[];
+  const initials=String(t.team_name||'E').trim().split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();
+  d.innerHTML=`<div class="team-ficha-shell">
+    <header class="team-ficha-header">
+      <div class="team-ficha-heading">
+        <div class="team-ficha-avatar">${esc(initials||'E')}</div>
+        <div><span class="eyebrow">FICHA DEL EQUIPO</span><h2>${esc(t.team_name)}</h2><p>${esc(t.school_name||'Centro no registrado')}${t.district?' · '+esc(t.district):''}</p></div>
+      </div>
+      <button type="button" class="team-ficha-close" data-action="close-detail" aria-label="Cerrar">×</button>
+    </header>
+    <main class="team-ficha-content">
+      <section class="team-ficha-section team-ficha-overview">
+        <div class="team-ficha-section-title"><span>Información del equipo</span><span class="team-ficha-status ${esc(t.status||'pending')}">${statusLabel(t.status)}</span></div>
+        <div class="team-ficha-grid">
+          <div class="team-ficha-item"><small>Centro educativo</small><strong>${esc(t.school_name||'—')}</strong></div>
+          <div class="team-ficha-item"><small>Distrito</small><strong>${esc(t.district||'—')}</strong></div>
+          <div class="team-ficha-item"><small>Responsable</small><strong>${esc(t.contact_name||'—')}</strong></div>
+          <div class="team-ficha-item"><small>Correo</small><strong>${esc(t.contact_email||'—')}</strong></div>
+          <div class="team-ficha-item"><small>Teléfono</small><strong>${esc(t.contact_phone||'—')}</strong></div>
+          <div class="team-ficha-item"><small>Registro</small><strong>${fmtDate(t.created_at)}</strong></div>
+        </div>
+      </section>
+      <section class="team-ficha-section">
+        <div class="team-ficha-section-title"><span>Docente coach</span><span class="team-ficha-count">${coach?'Registrado':'Pendiente'}</span></div>
+        ${coach?`<div class="team-ficha-coach"><div class="team-ficha-person-avatar">${esc(String(coach.full_name||'C').trim().slice(0,1).toUpperCase())}</div><div><strong>${esc(coach.full_name||'—')}</strong><span>${esc(coach.email||'Sin correo')}${coach.phone?' · '+esc(coach.phone):''}</span><small>${esc(coach.school_name||t.school_name||'')} ${coach.district?'· '+esc(coach.district):''}</small></div></div>`:'<div class="team-ficha-empty">No hay docente coach registrado.</div>'}
+      </section>
+      <section class="team-ficha-section team-ficha-members-section">
+        <div class="team-ficha-section-title"><span>Integrantes</span><span class="team-ficha-count">${members.length} ${members.length===1?'integrante':'integrantes'}</span></div>
+        <div class="team-ficha-members">${members.length?members.map((x,i)=>`<div class="team-ficha-member"><span class="team-ficha-number">${String(i+1).padStart(2,'0')}</span><div><strong>${esc(x.full_name||'Sin nombre')}</strong><span>${x.role==='alternate'?'Suplente':'Debatiente'}${x.email?' · '+esc(x.email):''}</span></div></div>`).join(''):'<div class="team-ficha-empty">No hay integrantes registrados.</div>'}</div>
+      </section>
+    </main>
+    <footer class="team-ficha-footer">
+      <button type="button" class="btn outline" data-action="close-detail">Cerrar</button>
+      <div>${t.status!=='rejected'?`<button type="button" class="btn danger" data-action="reject" data-id="${t.id}">Rechazar</button>`:''}${t.status!=='approved'?`<button type="button" class="btn primary" data-action="approve" data-id="${t.id}">Aprobar equipo</button>`:''}</div>
+    </footer>
+  </div>`;
   d.showModal();
 }
 
