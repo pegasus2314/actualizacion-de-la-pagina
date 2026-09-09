@@ -97,11 +97,22 @@
     modal.hidden=false;
   }
 
-  const registrationMessageObserver=new MutationObserver(()=>{
+  // Mostrar el modal únicamente cuando #formMessage CAMBIA a un mensaje de éxito.
+  // Si el usuario cambia de apartado, el mismo texto permanece en el DOM y ya no
+  // vuelve a disparar la notificación. Un nuevo envío puede dispararla nuevamente
+  // porque el mensaje cambia y luego vuelve a éxito.
+  let lastRegistrationMessage='';
+  function checkRegistrationMessage(){
     const message=document.querySelector('#formMessage');
-    if(message&&/inscripci[oó]n enviada/i.test(message.textContent||'')) showRegistrationSuccess();
-  });
+    if(!message)return;
+    const text=(message.textContent||'').replace(/\s+/g,' ').trim();
+    const isSuccess=/inscripci[oó]n enviada/i.test(text);
+    if(isSuccess && text!==lastRegistrationMessage)showRegistrationSuccess();
+    lastRegistrationMessage=text;
+  }
+  const registrationMessageObserver=new MutationObserver(checkRegistrationMessage);
   registrationMessageObserver.observe(document.body,{subtree:true,childList:true,characterData:true});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',checkRegistrationMessage);else checkRegistrationMessage();
 
   const participantScript=document.createElement('script');
   participantScript.src='participants-details.js';
