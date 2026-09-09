@@ -1,7 +1,5 @@
 (()=>{
   'use strict';
-  // Este archivo solo garantiza que el módulo de participantes se cargue una vez.
-  // Evitamos fetch()+Function(), que puede bloquear la página bajo CSP o políticas del navegador.
   const loadLocal=(src)=>new Promise((resolve,reject)=>{
     if(document.querySelector(`script[src="${src}"]`)){resolve();return}
     const s=document.createElement('script');
@@ -14,8 +12,14 @@
   const start=async()=>{
     try{
       await loadLocal('./participants-details.js');
+      await loadLocal('./admin-fix.js');
+      window.__TRDReloadParticipants=()=>{
+        const grid=document.querySelector('#teamsGrid');
+        if(grid)grid.dispatchEvent(new CustomEvent('trd:reload-participants'));
+        window.location.reload();
+      };
     }catch(error){
-      console.error('TRD participantes:',error);
+      console.error('TRD módulos:',error);
     }
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
