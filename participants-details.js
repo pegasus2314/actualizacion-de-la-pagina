@@ -83,8 +83,8 @@
         </button>
       </nav>
 
-      <div class="participants-pane" data-participants-pane="people"></div>
-      <div class="participants-pane hidden" data-participants-pane="teams"></div>`;
+      <div class="participants-pane" data-participants-pane="people" aria-hidden="false"></div>
+      <div class="participants-pane" data-participants-pane="teams" hidden aria-hidden="true"></div>`;
 
     renderPeople(grid.querySelector('[data-participants-pane="people"]'),data);
     renderTeams(grid.querySelector('[data-participants-pane="teams"]'),teams);
@@ -96,7 +96,12 @@
         x.classList.toggle('active',active);
         x.setAttribute('aria-selected',active?'true':'false');
       });
-      grid.querySelectorAll('[data-participants-pane]').forEach(x=>x.classList.toggle('hidden',x.dataset.participantsPane!==target));
+      grid.querySelectorAll('[data-participants-pane]').forEach(x=>{
+        const active=x.dataset.participantsPane===target;
+        x.classList.remove('hidden');
+        x.toggleAttribute('hidden',!active);
+        x.setAttribute('aria-hidden',active?'false':'true');
+      });
       bindQr(grid);
     });
 
@@ -208,6 +213,7 @@
     .tab-icon{width:44px;height:44px;display:grid;place-items:center;border-radius:13px;background:rgba(182,231,255,.055);font-size:19px}.participants-tab.active .tab-icon{background:rgba(25,220,229,.10)}
     .participants-tab b{display:block;font-size:13px;letter-spacing:.06em}.participants-tab small{display:block;margin-top:3px;color:#718b99;font-size:10px}.participants-tab em{font-style:normal;font-weight:900;font-size:13px;color:#6fdfea}
     .participants-pane.hidden,.person-card.hidden{display:none!important}
+    .participants-pane[hidden]{display:none!important}
     .participants-list-head{display:flex;justify-content:space-between;align-items:end;gap:18px;padding:4px 2px 2px}.participants-list-head h3{margin:4px 0 3px;font-size:22px}.participants-list-head p{margin:0;color:#7893a1;font-size:12px}.search-wrap{display:flex;align-items:center;gap:7px;width:min(340px,100%);padding:0 12px;border:1px solid rgba(182,231,255,.11);border-radius:12px;background:rgba(5,20,34,.65)}.search-wrap span{color:#6fdfea;font-size:19px}.search-wrap input{width:100%;padding:11px 0;border:0;outline:0;background:transparent;color:inherit;font:inherit;font-size:12px}.search-wrap input::placeholder{color:#607985}
     .people-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
     .person-card{display:grid;grid-template-columns:46px minmax(0,1fr) auto;align-items:center;gap:13px;padding:17px;border:1px solid rgba(182,231,255,.09);border-radius:17px;background:rgba(5,20,34,.68);transition:border-color .18s ease,transform .18s ease}.person-card:hover{border-color:rgba(111,223,234,.18);transform:translateY(-1px)}
