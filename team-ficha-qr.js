@@ -1,4 +1,22 @@
 (()=>{
+  // Failsafe visual: si otro script deja todas las vistas ocultas, la portada nunca debe quedar vacía.
+  const restoreViews=()=>{
+    const main=document.querySelector('main');
+    const sections=[...document.querySelectorAll('.view-section')];
+    if(main) main.style.display='block';
+    if(!sections.length)return;
+    const visible=sections.some(s=>getComputedStyle(s).display!=='none' && !s.classList.contains('view-hidden'));
+    if(!visible){
+      sections.forEach(s=>s.classList.remove('view-hidden'));
+      const home=document.getElementById('inicio');
+      sections.forEach(s=>{s.style.display=s===home?'block':'none'});
+      document.body.classList.add('viewing-section');
+    }
+  };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',restoreViews,{once:true}); else restoreViews();
+  setTimeout(restoreViews,300);
+  setTimeout(restoreViews,1200);
+
   const SUPABASE_URL='https://bstdgcpakqmltifzaqso.supabase.co';
   const SUPABASE_KEY='sb_publishable_-39OPIl11i5GSPBbF3q0ew_puLiVK7N';
   const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
