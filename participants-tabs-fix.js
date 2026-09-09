@@ -4,14 +4,11 @@
   const apply=()=>{
     const grid=document.querySelector('#teamsGrid');
     if(!grid)return;
-
     const tabs=[...grid.querySelectorAll('[data-participants-tab]')];
     const panes=[...grid.querySelectorAll('[data-participants-pane]')];
     if(!tabs.length||!panes.length)return;
-
     const activeTab=tabs.find(t=>t.classList.contains('active'))||tabs[0];
     const target=activeTab?.dataset.participantsTab||'people';
-
     panes.forEach(pane=>{
       const active=pane.dataset.participantsPane===target;
       pane.hidden=!active;
@@ -20,7 +17,6 @@
       pane.classList.toggle('is-tab-active',active);
       pane.classList.toggle('is-tab-hidden',!active);
     });
-
     tabs.forEach(tab=>{
       const active=tab.dataset.participantsTab===target;
       tab.classList.toggle('active',active);
@@ -33,7 +29,6 @@
     if(!grid)return;
     if(grid.dataset.tabsFixInstalled==='1'){apply();return}
     grid.dataset.tabsFixInstalled='1';
-
     grid.addEventListener('click',event=>{
       const tab=event.target.closest('[data-participants-tab]');
       if(!tab||!grid.contains(tab))return;
@@ -53,7 +48,6 @@
         pane.classList.toggle('is-tab-hidden',!active);
       });
     },true);
-
     apply();
   };
 
@@ -62,23 +56,18 @@
     #teamsGrid [data-participants-pane].is-tab-hidden{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
     #teamsGrid [data-participants-pane].is-tab-active{display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
     #teamsGrid [data-participants-pane][hidden]{display:none!important}
-
-    /* Corrección visual de los paneles de participantes/equipos */
     #teamsGrid .participants-summary{display:grid!important;grid-template-columns:repeat(3,minmax(105px,1fr))!important;gap:10px!important;align-items:stretch!important}
     #teamsGrid .participants-summary>div{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:5px!important;min-width:0!important;text-align:center!important}
     #teamsGrid .participants-summary>div>strong,#teamsGrid .participants-summary>div>span{display:block!important;margin:0!important}
-
     #teamsGrid .participants-tabs{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;width:100%!important}
     #teamsGrid .participants-tab{display:grid!important;grid-template-columns:46px minmax(0,1fr) auto!important;align-items:center!important;gap:12px!important;min-width:0!important}
     #teamsGrid .participants-tab>.tab-icon{display:grid!important;place-items:center!important;flex:0 0 44px!important}
     #teamsGrid .participants-tab>span:not(.tab-icon){display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;gap:3px!important;min-width:0!important}
     #teamsGrid .participants-tab b,#teamsGrid .participants-tab small{display:block!important;margin:0!important;line-height:1.2!important}
     #teamsGrid .participants-tab em{display:block!important;margin:0!important;white-space:nowrap!important}
-
     #teamsGrid .participants-list-head{display:flex!important;justify-content:space-between!important;align-items:flex-end!important;gap:18px!important;width:100%!important}
     #teamsGrid .participants-list-head>div:first-child{min-width:0!important}
     #teamsGrid .participants-list-head h3,#teamsGrid .participants-list-head p{display:block!important}
-
     #teamsGrid .people-list{display:grid!important;gap:10px!important;margin-top:14px!important}
     #teamsGrid .person-card{display:grid!important;grid-template-columns:42px minmax(0,1fr) auto!important;align-items:center!important;gap:13px!important;width:100%!important;min-width:0!important}
     #teamsGrid .person-main{display:block!important;min-width:0!important}
@@ -87,11 +76,8 @@
     #teamsGrid .person-title-row h3{display:block!important;margin:0!important;line-height:1.2!important}
     #teamsGrid .person-role{display:block!important;margin-top:4px!important}
     #teamsGrid .person-info{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;margin-top:11px!important;width:100%!important}
-    #teamsGrid .person-info>span{display:flex!important;flex-direction:column!important;gap:4px!important;min-width:0!important;padding:7px 9px!important;border-radius:10px!important;background:rgba(182,231,255,.025)!important}
+    #teamsGrid .person-info>span{display:flex!important;flex-direction:column!important;gap:4px!important;min-width:0!important;padding:7px 9px!important;border-radius:10px!important;background:rgba(182,231,255,.025)!important;overflow:hidden!important}
     #teamsGrid .person-info>span>b{display:block!important;margin:0!important;line-height:1!important}
-    #teamsGrid .person-info>span:not(:has(b)){display:block!important}
-    #teamsGrid .person-info>span{overflow:hidden!important}
-
     #teamsGrid .teams-list{display:grid!important;gap:14px!important;margin-top:14px!important}
     #teamsGrid .participant-team-card{display:block!important;width:100%!important;min-width:0!important}
     #teamsGrid .team-card-head{display:grid!important;grid-template-columns:44px minmax(0,1fr) auto!important;align-items:center!important;gap:12px!important;min-width:0!important}
@@ -107,7 +93,6 @@
     #teamsGrid .member-data strong,#teamsGrid .member-data span{display:block!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
     #teamsGrid .member-data span{line-height:1.2!important}
     #teamsGrid .status-badge{display:inline-flex!important;align-items:center!important;justify-content:center!important;white-space:nowrap!important}
-
     @media(max-width:760px){
       #teamsGrid .participants-hero{flex-direction:column!important;align-items:stretch!important}
       #teamsGrid .participants-summary{grid-template-columns:repeat(3,minmax(0,1fr))!important}
@@ -129,9 +114,24 @@
   `;
   document.head.appendChild(style);
 
-  const observer=new MutationObserver(()=>{install();apply()});
-  observer.observe(document.body,{childList:true,subtree:true});
+  let recoveryTimer=0;
+  const recoverIfOverwritten=()=>{
+    const grid=document.querySelector('#teamsGrid');
+    if(!grid||!location.hash.includes('participantes'))return;
+    if(grid.querySelector('[data-participants-tab]')){apply();return}
+    if(recoveryTimer)return;
+    recoveryTimer=setTimeout(()=>{
+      recoveryTimer=0;
+      if(!location.hash.includes('participantes'))return;
+      const script=document.createElement('script');
+      script.src='./participants-details.js?recovery='+Date.now();
+      script.dataset.trdParticipantsRecovery='1';
+      document.head.appendChild(script);
+    },150);
+  };
 
+  const observer=new MutationObserver(()=>{install();apply();recoverIfOverwritten()});
+  observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','hidden']});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
   else install();
   setTimeout(install,250);
