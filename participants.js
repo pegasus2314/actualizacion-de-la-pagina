@@ -4,24 +4,23 @@
     if(document.querySelector(`script[src="${src}"]`)){resolve();return}
     const s=document.createElement('script');
     s.src=src;
-    s.async=false;
+    s.async=true;
     s.onload=resolve;
     s.onerror=reject;
     document.head.appendChild(s);
   });
+
   const start=async()=>{
     try{
+      // El módulo público se carga primero. El panel administrativo se difiere
+      // para no bloquear la pantalla de participantes.
       await loadLocal('./participants-details.js');
-      await loadLocal('./admin-fix.js');
-      window.__TRDReloadParticipants=()=>{
-        const grid=document.querySelector('#teamsGrid');
-        if(grid)grid.dispatchEvent(new CustomEvent('trd:reload-participants'));
-        window.location.reload();
-      };
+      loadLocal('./admin-fix.js').catch(error=>console.error('TRD admin-fix:',error));
     }catch(error){
       console.error('TRD módulos:',error);
     }
   };
+
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
   else start();
 })();
