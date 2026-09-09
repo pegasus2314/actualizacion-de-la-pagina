@@ -123,39 +123,32 @@ async function showTeamDetails(id){
   if(!d){d=document.createElement('dialog');d.id='teamDetailDialog';document.body.appendChild(d)}
   const members=debaters||[];
   const initials=String(t.team_name||'E').trim().split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();
-  d.innerHTML=`<div class="team-ficha-shell">
+  d.innerHTML=`<style>
+#teamDetailDialog{width:min(900px,calc(100vw - 24px));max-width:900px;height:min(760px,calc(100vh - 24px));max-height:calc(100vh - 24px);padding:0;border:0;border-radius:24px;background:transparent;overflow:hidden;box-shadow:0 30px 90px rgba(0,0,0,.58)}
+#teamDetailDialog::backdrop{background:rgba(1,8,16,.84);backdrop-filter:blur(8px)}
+.team-ficha-shell{height:100%;min-height:0;display:flex;flex-direction:column;background:linear-gradient(150deg,#0b2639,#061823);color:#edf8fb;border:1px solid rgba(182,231,255,.14);border-radius:24px;overflow:hidden}
+.team-ficha-header{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:22px 26px;border-bottom:1px solid rgba(182,231,255,.1);background:rgba(7,28,43,.82)}
+.team-ficha-heading{display:flex;align-items:center;gap:15px;min-width:0}.team-ficha-heading h2{margin:2px 0 4px;font-size:clamp(24px,3vw,34px);line-height:1.05}.team-ficha-heading p{margin:0;color:#91aab8;font-size:13px}.team-ficha-avatar{width:52px;height:52px;flex:0 0 52px;display:grid;place-items:center;border-radius:16px;background:rgba(25,220,229,.1);border:1px solid rgba(25,220,229,.24);color:#7de7ec;font-weight:800;font-size:17px}.team-ficha-close{width:38px;height:38px;flex:0 0 38px;border:1px solid rgba(182,231,255,.12);border-radius:12px;background:rgba(255,255,255,.035);color:#b8cbd4;font-size:25px;cursor:pointer}.team-ficha-close:hover{background:rgba(255,255,255,.08);color:#fff}
+.team-ficha-content{flex:1;min-height:0;overflow:auto;padding:18px 24px 8px}.team-ficha-section{padding:17px 0;border-bottom:1px solid rgba(182,231,255,.08)}.team-ficha-section:last-child{border-bottom:0}.team-ficha-section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px;font-size:13px;font-weight:800;letter-spacing:.02em}.team-ficha-status,.team-ficha-count{padding:6px 9px;border-radius:999px;font-size:10px;font-weight:800;white-space:nowrap}.team-ficha-status{background:rgba(25,220,229,.08);border:1px solid rgba(25,220,229,.18);color:#7de7ec}.team-ficha-status.rejected{color:#ff9a9a;background:rgba(255,90,90,.08);border-color:rgba(255,90,90,.18)}.team-ficha-status.approved{color:#9cf0c1;background:rgba(64,220,130,.08);border-color:rgba(64,220,130,.18)}.team-ficha-count{color:#8fa8b6;background:rgba(182,231,255,.05);border:1px solid rgba(182,231,255,.09)}
+.team-ficha-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.team-ficha-item{min-width:0;padding:12px 13px;border-radius:13px;background:rgba(255,255,255,.025);border:1px solid rgba(182,231,255,.07)}.team-ficha-item small{display:block;margin-bottom:5px;color:#6f8a9a;font-size:9px;text-transform:uppercase;letter-spacing:.08em;font-weight:800}.team-ficha-item strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#edf8fb}
+.team-ficha-coach{display:flex;align-items:center;gap:12px;padding:13px;border:1px solid rgba(182,231,255,.08);border-radius:14px;background:rgba(255,255,255,.025)}.team-ficha-person-avatar{width:40px;height:40px;flex:0 0 40px;display:grid;place-items:center;border-radius:12px;background:rgba(182,231,255,.07);color:#bfe8ef;font-weight:800}.team-ficha-coach strong,.team-ficha-coach span,.team-ficha-coach small{display:block}.team-ficha-coach strong{font-size:13px}.team-ficha-coach span{margin-top:3px;color:#9db2bd;font-size:11px}.team-ficha-coach small{margin-top:4px;color:#718b9a;font-size:10px}.team-ficha-empty{padding:15px;border:1px dashed rgba(182,231,255,.12);border-radius:13px;color:#78919f;text-align:center;font-size:11px}
+.team-ficha-members{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.team-ficha-member{display:flex;align-items:center;gap:10px;min-width:0;padding:11px 12px;border-radius:13px;background:rgba(255,255,255,.025);border:1px solid rgba(182,231,255,.07)}.team-ficha-number{width:30px;height:30px;flex:0 0 30px;display:grid;place-items:center;border-radius:9px;background:rgba(25,220,229,.06);color:#75dce2;font-size:9px;font-weight:800}.team-ficha-member strong,.team-ficha-member span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.team-ficha-member strong{font-size:12px}.team-ficha-member span{margin-top:3px;color:#7f99a7;font-size:10px}
+.team-ficha-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 24px;border-top:1px solid rgba(182,231,255,.1);background:rgba(5,20,31,.88)}.team-ficha-footer>div{display:flex;gap:8px}.team-ficha-footer .btn{min-height:40px;padding:0 15px}.team-ficha-footer .outline{border:1px solid rgba(182,231,255,.14)}
+@media(max-width:720px){#teamDetailDialog{width:calc(100vw - 12px);height:calc(100vh - 12px);max-height:calc(100vh - 12px);border-radius:18px}.team-ficha-shell,.team-ficha-header{border-radius:18px}.team-ficha-header{padding:17px}.team-ficha-content{padding:10px 17px 4px}.team-ficha-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.team-ficha-members{grid-template-columns:1fr}.team-ficha-footer{padding:12px 17px}.team-ficha-footer>div{flex:1}.team-ficha-footer .btn{flex:1}.team-ficha-heading h2{font-size:24px}}
+@media(max-width:430px){.team-ficha-grid{grid-template-columns:1fr}.team-ficha-footer{align-items:stretch;flex-direction:column}.team-ficha-footer>div{width:100%}.team-ficha-heading p{font-size:11px}}
+</style><div class="team-ficha-shell">
     <header class="team-ficha-header">
-      <div class="team-ficha-heading">
-        <div class="team-ficha-avatar">${esc(initials||'E')}</div>
-        <div><span class="eyebrow">FICHA DEL EQUIPO</span><h2>${esc(t.team_name)}</h2><p>${esc(t.school_name||'Centro no registrado')}${t.district?' · '+esc(t.district):''}</p></div>
-      </div>
+      <div class="team-ficha-heading"><div class="team-ficha-avatar">${esc(initials||'E')}</div><div><span class="eyebrow">FICHA DEL EQUIPO</span><h2>${esc(t.team_name)}</h2><p>${esc(t.school_name||'Centro no registrado')}${t.district?' · '+esc(t.district):''}</p></div></div>
       <button type="button" class="team-ficha-close" data-action="close-detail" aria-label="Cerrar">×</button>
     </header>
     <main class="team-ficha-content">
-      <section class="team-ficha-section team-ficha-overview">
-        <div class="team-ficha-section-title"><span>Información del equipo</span><span class="team-ficha-status ${esc(t.status||'pending')}">${statusLabel(t.status)}</span></div>
-        <div class="team-ficha-grid">
-          <div class="team-ficha-item"><small>Centro educativo</small><strong>${esc(t.school_name||'—')}</strong></div>
-          <div class="team-ficha-item"><small>Distrito</small><strong>${esc(t.district||'—')}</strong></div>
-          <div class="team-ficha-item"><small>Responsable</small><strong>${esc(t.contact_name||'—')}</strong></div>
-          <div class="team-ficha-item"><small>Correo</small><strong>${esc(t.contact_email||'—')}</strong></div>
-          <div class="team-ficha-item"><small>Teléfono</small><strong>${esc(t.contact_phone||'—')}</strong></div>
-          <div class="team-ficha-item"><small>Registro</small><strong>${fmtDate(t.created_at)}</strong></div>
-        </div>
-      </section>
-      <section class="team-ficha-section">
-        <div class="team-ficha-section-title"><span>Docente coach</span><span class="team-ficha-count">${coach?'Registrado':'Pendiente'}</span></div>
-        ${coach?`<div class="team-ficha-coach"><div class="team-ficha-person-avatar">${esc(String(coach.full_name||'C').trim().slice(0,1).toUpperCase())}</div><div><strong>${esc(coach.full_name||'—')}</strong><span>${esc(coach.email||'Sin correo')}${coach.phone?' · '+esc(coach.phone):''}</span><small>${esc(coach.school_name||t.school_name||'')} ${coach.district?'· '+esc(coach.district):''}</small></div></div>`:'<div class="team-ficha-empty">No hay docente coach registrado.</div>'}
-      </section>
-      <section class="team-ficha-section team-ficha-members-section">
-        <div class="team-ficha-section-title"><span>Integrantes</span><span class="team-ficha-count">${members.length} ${members.length===1?'integrante':'integrantes'}</span></div>
-        <div class="team-ficha-members">${members.length?members.map((x,i)=>`<div class="team-ficha-member"><span class="team-ficha-number">${String(i+1).padStart(2,'0')}</span><div><strong>${esc(x.full_name||'Sin nombre')}</strong><span>${x.role==='alternate'?'Suplente':'Debatiente'}${x.email?' · '+esc(x.email):''}</span></div></div>`).join(''):'<div class="team-ficha-empty">No hay integrantes registrados.</div>'}</div>
-      </section>
+      <section class="team-ficha-section"><div class="team-ficha-section-title"><span>Información del equipo</span><span class="team-ficha-status ${esc(t.status||'pending')}">${statusLabel(t.status)}</span></div><div class="team-ficha-grid">
+        <div class="team-ficha-item"><small>Centro educativo</small><strong>${esc(t.school_name||'—')}</strong></div><div class="team-ficha-item"><small>Distrito</small><strong>${esc(t.district||'—')}</strong></div><div class="team-ficha-item"><small>Responsable</small><strong>${esc(t.contact_name||'—')}</strong></div><div class="team-ficha-item"><small>Correo</small><strong>${esc(t.contact_email||'—')}</strong></div><div class="team-ficha-item"><small>Teléfono</small><strong>${esc(t.contact_phone||'—')}</strong></div><div class="team-ficha-item"><small>Registro</small><strong>${fmtDate(t.created_at)}</strong></div>
+      </div></section>
+      <section class="team-ficha-section"><div class="team-ficha-section-title"><span>Docente coach</span><span class="team-ficha-count">${coach?'Registrado':'Pendiente'}</span></div>${coach?`<div class="team-ficha-coach"><div class="team-ficha-person-avatar">${esc(String(coach.full_name||'C').trim().slice(0,1).toUpperCase())}</div><div><strong>${esc(coach.full_name||'—')}</strong><span>${esc(coach.email||'Sin correo')}${coach.phone?' · '+esc(coach.phone):''}</span><small>${esc(coach.school_name||t.school_name||'')} ${coach.district?'· '+esc(coach.district):''}</small></div></div>`:'<div class="team-ficha-empty">No hay docente coach registrado.</div>'}</section>
+      <section class="team-ficha-section"><div class="team-ficha-section-title"><span>Integrantes</span><span class="team-ficha-count">${members.length} ${members.length===1?'integrante':'integrantes'}</span></div><div class="team-ficha-members">${members.length?members.map((x,i)=>`<div class="team-ficha-member"><span class="team-ficha-number">${String(i+1).padStart(2,'0')}</span><div><strong>${esc(x.full_name||'Sin nombre')}</strong><span>${x.role==='alternate'?'Suplente':'Debatiente'}${x.email?' · '+esc(x.email):''}</span></div></div>`).join(''):'<div class="team-ficha-empty">No hay integrantes registrados.</div>'}</div></section>
     </main>
-    <footer class="team-ficha-footer">
-      <button type="button" class="btn outline" data-action="close-detail">Cerrar</button>
-      <div>${t.status!=='rejected'?`<button type="button" class="btn danger" data-action="reject" data-id="${t.id}">Rechazar</button>`:''}${t.status!=='approved'?`<button type="button" class="btn primary" data-action="approve" data-id="${t.id}">Aprobar equipo</button>`:''}</div>
-    </footer>
+    <footer class="team-ficha-footer"><button type="button" class="btn outline" data-action="close-detail">Cerrar</button><div>${t.status!=='rejected'?`<button type="button" class="btn danger" data-action="reject" data-id="${t.id}">Rechazar</button>`:''}${t.status!=='approved'?`<button type="button" class="btn primary" data-action="approve" data-id="${t.id}">Aprobar equipo</button>`:''}</div></footer>
   </div>`;
   d.showModal();
 }
