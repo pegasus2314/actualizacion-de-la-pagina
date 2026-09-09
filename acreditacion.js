@@ -1,45 +1,15 @@
 const SUPABASE_URL='https://bstdgcpakqmltifzaqso.supabase.co';
 const SUPABASE_KEY='sb_publishable_-39OPIl11i5GSPBbF3q0ew_puLiVK7N';
-const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const app=document.querySelector('#app');
-const params=new URLSearchParams(location.search),id=params.get('id'),type=params.get('type')||'accreditation';
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY),app=document.querySelector('#app');
+const id=new URLSearchParams(location.search).get('id');
 const esc=v=>String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]));
-const labelStatus=s=>s==='accredited'?'ACREDITADO':s==='rejected'?'RECHAZADO':'PENDIENTE';
-const labelRole=r=>r==='judge'?'JUEZ':r==='staff'?'STAFF':r==='alternate'?'SUPLENTE':'DEBATIENTE';
-const shortCode=id=>id?String(id).slice(0,8).toUpperCase():'—';
-function render(data){
-  const status=data.status||data.accreditation_status||'pending';
-  const fullName=data.first_name?`${data.first_name} ${data.last_name||''}`.trim():data.full_name||'Participante';
-  app.innerHTML=`
-    <span class="eyebrow">VERIFICACIÓN QR · ${esc(labelRole(data.role))}</span>
-    <h1>${esc(fullName)}</h1>
-    <div class="status ${esc(status)}">${labelStatus(status)}</div>
-    <div class="grid">
-      <div class="field"><span>Nombre completo</span><strong>${esc(fullName)}</strong></div>
-      <div class="field"><span>Rol</span><strong>${esc(labelRole(data.role))}</strong></div>
-      <div class="field"><span>Centro educativo</span><strong>${esc(data.school_name||'—')}</strong></div>
-      <div class="field"><span>Distrito educativo</span><strong>${esc(data.district||'—')}</strong></div>
-      ${data.team_name?`<div class="field"><span>Equipo</span><strong>${esc(data.team_name)}</strong></div>`:''}
-      ${data.grade?`<div class="field"><span>Grado</span><strong>${esc(data.grade)}</strong></div>`:''}
-      <div class="field"><span>Código de acreditación</span><strong>${esc(shortCode(data.id))}</strong></div>
-    </div>
-    <div class="verification-ok">
-      <strong>✓ Código verificado</strong>
-      <span>Esta ficha se puede consultar directamente desde el teléfono. No necesitas iniciar sesión para verificar la acreditación.</span>
-    </div>
-    <p class="note">Por seguridad, el QR público no expone cédula, teléfono, alergias ni medicamentos. Esa información queda reservada para la gestión interna autorizada del torneo.</p>
-    <a class="btn" href="./">Volver al sitio</a>`;
-}
-async function load(){
-  if(!id){app.innerHTML='<h1>QR no válido</h1><p class="error">No se recibió un identificador de acreditación.</p>';return}
-  if(type==='participant'){
-    const {data:p,error}=await db.rpc('get_esmeralda_public_debater',{p_debater_id:id});
-    if(error||!p?.length){app.innerHTML='<h1>Participante no encontrado</h1><p class="error">El código QR no corresponde a un participante publicado.</p>';return}
-    render(p[0]);
-    return;
-  }
-  const {data:pub,error}=await db.rpc('get_esmeralda_accreditation_public',{p_id:id});
-  if(error||!pub?.length){app.innerHTML='<h1>Acreditación no encontrada</h1><p class="error">El código QR no corresponde a un registro válido.</p>';return}
-  render(pub[0]);
-}
-load();
+const status=s=>s==='accredited'?'ACREDITADO':s==='rejected'?'RECHAZADO':'PENDIENTE';
+const role=r=>r==='judge'?'JUEZ':r==='staff'?'STAFF':r==='alternate'?'SUPLENTE':'DEBATIENTE';
+const css=document.createElement('style');css.textContent=`.login-form{display:grid;gap:14px;margin-top:20px}.login-form label{display:grid;gap:7px;color:#b8cbd4;font-size:12px;font-weight:700}.login-form input{padding:12px;border-radius:11px;border:1px solid rgba(182,231,255,.12);background:#061522;color:#eef8fb}.error{min-height:18px;color:#ff7180}.verified-head{display:flex;justify-content:space-between;gap:20px}.verify-box{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:18px;padding:18px;border:1px solid rgba(25,220,229,.18);border-radius:15px;background:rgba(25,220,229,.055)}.verify-box span{display:block;color:var(--muted);font-size:12px;margin-top:4px}.verify-btn{margin-top:0;background:#42dc9f}.actions{display:flex;justify-content:flex-end;margin-top:18px}.actions .btn{margin-top:0}.btn.outline{background:transparent;color:var(--mint);border:1px solid rgba(182,231,255,.16)}@media(max-width:650px){.verified-head,.verify-box{flex-direction:column;align-items:stretch}}`;document.head.appendChild(css);
+function login(message=''){app.innerHTML=`<span class="eyebrow">ACCESO DE ACREDITACIÓN</span><h1>Verificar participante</h1><p class="note">Este QR abre una ficha protegida. Inicia sesión con una cuenta habilitada con el rol <strong>acreditacion</strong>.</p><form id="login" class="login-form"><label>Usuario / correo<input id="email" type="email" autocomplete="username" required></label><label>Contraseña<input id="password" type="password" autocomplete="current-password" required></label><button class="btn" type="submit">Entrar y consultar</button><div class="error">${esc(message)}</div></form>`;document.querySelector('#login').onsubmit=signIn}
+async function signIn(e){e.preventDefault();const b=e.currentTarget.querySelector('button'),email=document.querySelector('#email').value.trim(),password=document.querySelector('#password').value;b.disabled=true;b.textContent='Verificando…';const {data,error}=await db.auth.signInWithPassword({email,password});if(error||!data.session){login('Usuario o contraseña incorrectos.');return}const {data:r,error:re}=await db.from('esmeralda_staff_roles').select('role').eq('user_id',data.user.id).maybeSingle();if(re||!r||!['acreditacion','admin','coordinador'].includes(r.role)){await db.auth.signOut();login('Esta cuenta no tiene permisos de acreditación.');return}loadParticipant()}
+async function loadParticipant(){if(!id){app.innerHTML='<h1>QR no válido</h1><p class="error">No se recibió el identificador del participante.</p>';return}app.innerHTML='<span class="eyebrow">ACREDITACIÓN</span><h1>Consultando…</h1><p class="note">Validando permisos y cargando la ficha.</p>';const {data,error}=await db.rpc('get_esmeralda_accreditation_staff',{p_debater_id:id});if(error||!data){await db.auth.signOut();login(error?.message||'No fue posible consultar este QR.');return}participant=typeof data==='string'?JSON.parse(data):data;render()}
+let participant=null;
+function render(){const p=participant,s=p.accreditation_status||'pending',name=p.first_name?`${p.first_name} ${p.last_name||''}`.trim():p.full_name||'Participante';app.innerHTML=`<div class="verified-head"><div><span class="eyebrow">FICHA DE ACREDITACIÓN</span><h1>${esc(name)}</h1><p class="note">Código: <strong>${esc(String(p.id).slice(0,8).toUpperCase())}</strong></p></div><span class="status ${s}">${status(s)}</span></div><div class="grid"><div class="field"><span>Nombre completo</span><strong>${esc(name)}</strong></div><div class="field"><span>Rol</span><strong>${esc(role(p.role))}</strong></div><div class="field"><span>Equipo</span><strong>${esc(p.team_name||'—')}</strong></div><div class="field"><span>Centro educativo</span><strong>${esc(p.school_name||'—')}</strong></div><div class="field"><span>Distrito</span><strong>${esc(p.district||'—')}</strong></div><div class="field"><span>Grado</span><strong>${esc(p.grade||'—')}</strong></div><div class="field"><span>Correo</span><strong>${esc(p.email||'—')}</strong></div><div class="field"><span>Teléfono</span><strong>${esc(p.phone||'—')}</strong></div></div>${s==='accredited'?'<div class="verification-ok"><strong>✓ Participante acreditado</strong><span>La verificación ya está registrada en el sistema.</span></div>':'<div class="verify-box"><div><strong>¿Los datos son correctos?</strong><span>Confirma la identidad y la información antes de acreditar.</span></div><button id="verify" class="btn verify-btn">✓ Verificar y acreditar</button></div>'}<div class="actions"><button id="logout" class="btn outline">Cerrar sesión</button></div>`;document.querySelector('#verify')?.addEventListener('click',verify);document.querySelector('#logout').onclick=async()=>{await db.auth.signOut();participant=null;login()}}
+async function verify(){const b=document.querySelector('#verify');if(!confirm('¿Confirmas que este participante fue verificado y debe pasar a Acreditado?'))return;b.disabled=true;b.textContent='Registrando…';const {error}=await db.rpc('verify_esmeralda_debater',{p_debater_id:id});if(error){b.disabled=false;b.textContent='✓ Verificar y acreditar';alert(error.message);return}await loadParticipant()}
+(async()=>{if(!id){login('El QR no contiene un participante válido.');return}const {data:{session}}=await db.auth.getSession();session?loadParticipant():login()})();
