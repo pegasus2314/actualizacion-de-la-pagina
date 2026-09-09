@@ -61,4 +61,10 @@
 @media(max-width:430px){.team-member-detail-fields{grid-template-columns:1fr}}
 `;
   document.head.appendChild(style);
+
+  // También mejora la sección pública de Participantes: nombres, datos básicos y QR.
+  const participantScript=document.createElement('script');
+  participantScript.src='participants-details.js';
+  participantScript.async=false;
+  document.head.appendChild(participantScript);
 })();
