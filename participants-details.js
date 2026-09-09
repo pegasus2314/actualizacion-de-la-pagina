@@ -1,13 +1,13 @@
 (()=>{
   'use strict';
   const SUPABASE_URL='https://bstdgcpakqmltifzaqso.supabase.co';
-  const SUPABASE_KEY='sb_publishable_-39OPIl11i5GSPBbF3q0ew_puLiKT7N';
+  const SUPABASE_KEY='sb_publishable_-39OPIl11i5GSPBbF3q0ew_puLiVK7N';
+  const API_HEADERS={apikey:SUPABASE_KEY,'Content-Type':'application/json',Accept:'application/json'};
   const esc=v=>String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]));
   const role=r=>r==='alternate'?'Suplente':'Debatiente';
   const status=s=>s==='accredited'?'ACREDITADO':s==='rejected'?'RECHAZADO':'PENDIENTE';
   const statusClass=s=>s==='accredited'?'accredited':s==='rejected'?'rejected':'pending';
-  const QR_ROLES=new Set(['admin','admin_maestro','coordinador','coordinator','acreditacion','reviewer','subsecretario_acreditacion','logistica','logistico','coordinador_logistica']);
-  let db=null,lastData=[],canSeeQr=false,loading=false;
+  let lastData=[],loading=false;
 
   function getGrid(){
     let grid=document.querySelector('#teamsGrid');
@@ -21,36 +21,28 @@
     return grid;
   }
 
-  async function waitForSupabase(){
-    for(let i=0;i<50;i++){
-      if(window.supabase){
-        if(!db)db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-        return true;
-      }
-      await new Promise(r=>setTimeout(r,100));
+  async function api(path,options={}){
+    const response=await fetch(`${SUPABASE_URL}${path}`,{...options,headers:{...API_HEADERS,...(options.headers||{})}});
+    const text=await response.text();
+    let data=null;
+    try{data=text?JSON.parse(text):null}catch(_){data=text}
+    if(!response.ok){
+      const message=data?.message||data?.error_description||data?.hint||`HTTP ${response.status}`;
+      throw new Error(message);
     }
-    return false;
+    return data;
   }
 
   async function load(){
     if(loading)return;
     const grid=getGrid();
     if(!grid)return;
-    if(!await waitForSupabase())return;
     loading=true;
     try{
-      canSeeQr=false;
-      try{
-        const {data:{user}}=await db.auth.getUser();
-        if(user){
-          const {data:staff}=await db.from('esmeralda_staff_roles').select('role').eq('user_id',user.id).in('role',[...QR_ROLES]).limit(1);
-          canSeeQr=!!staff?.length;
-        }
-      }catch(_){ }
-      const {data:event,error:eventError}=await db.from('esmeralda_events').select('id').eq('slug','trd-la-regional-esmeralda').maybeSingle();
-      if(eventError||!event?.id){showEmpty(grid,'No se pudo cargar el evento.');return;}
-      const {data,error}=await db.rpc('get_esmeralda_public_debaters',{p_event_id:event.id});
-      if(error){console.error('TRD participantes RPC:',error);showEmpty(grid,'No se pudieron cargar los participantes.');return;}
+      const events=await api('/rest/v1/esmeralda_events?select=id&slug=eq.trd-la-regional-esmeralda&limit=1');
+      const event=Array.isArray(events)?events[0]:null;
+      if(!event?.id){showEmpty(grid,'No se pudo cargar el evento.');return;}
+      const data=await api('/rest/v1/rpc/get_esmeralda_public_debaters',{method:'POST',body:JSON.stringify({p_event_id:event.id})});
       lastData=Array.isArray(data)?data:[];
       render(grid,lastData);
     }catch(error){
@@ -87,6 +79,7 @@
     const search=[p.full_name,p.team_name,p.school_name,p.district,p.grade,role(p.role)].filter(Boolean).join(' ').toLowerCase();
     return `<article class="person-card" data-search="${esc(search)}"><div class="person-avatar">${esc((p.full_name||'?')[0].toUpperCase())}</div><div class="person-main"><div class="person-title-row"><div><h3>${esc(p.full_name||'Participante')}</h3><span class="person-role">${esc(role(p.role))}</span></div>${statusBadge(p.accreditation_status)}</div><div class="person-info"><span><b>Centro</b>${esc(p.school_name||'No indicado')}</span><span><b>Distrito</b>${esc(p.district||'No indicado')}</span><span><b>Equipo</b>${esc(p.team_name||'Sin equipo')}</span>${p.grade?`<span><b>Grado</b>${esc(p.grade)}</span>`:''}</div></div></article>`;
   }
+
   function teamCard(team){return `<article class="participant-team-card"><header class="team-card-head"><div class="team-mark">👥</div><div class="team-card-title"><span class="section-label">EQUIPO</span><h3>${esc(team.team_name)}</h3><p>${esc(team.school_name||'Centro educativo')}${team.district?' · '+esc(team.district):''}</p></div><span class="team-count">${team.members.length} integrantes</span></header><div class="team-members">${team.members.map((p,i)=>`<div class="team-member"><span class="member-number">${i+1}</span><div class="member-data"><strong>${esc(p.full_name||'Participante')}</strong><span>${esc(role(p.role))}${p.grade?' · '+esc(p.grade):''}</span></div>${statusBadge(p.accreditation_status)}</div>`).join('')}</div></article>`}
   function statusBadge(s){return `<span class="status-pill ${statusClass(s)}"><i></i>${status(s)}</span>`}
 
@@ -103,7 +96,7 @@
 
   async function boot(){
     for(let i=0;i<30;i++){
-      if(getGrid()&&await waitForSupabase()){await load();return}
+      if(getGrid()){await load();return}
       await new Promise(r=>setTimeout(r,200));
     }
     console.warn('TRD participantes: no se encontró la sección pública de participantes.');
