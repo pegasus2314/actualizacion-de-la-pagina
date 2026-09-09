@@ -1,5 +1,4 @@
 (()=>{
-  // Failsafe visual: si otro script deja todas las vistas ocultas, la portada nunca debe quedar vacía.
   const restoreViews=()=>{
     const main=document.querySelector('main');
     const sections=[...document.querySelectorAll('.view-section')];
@@ -77,8 +76,32 @@
 .team-member-qr-card .team-member-qr-data{display:grid;gap:4px;margin:-6px 0 14px;color:#8fa8b6;font-size:10px}.team-member-qr-card .team-member-qr-data span{display:block}
 @media(max-width:720px){.team-member-detail-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:430px){.team-member-detail-fields{grid-template-columns:1fr}}
+
+.trd-registration-success{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:20px;background:rgba(1,8,15,.78);backdrop-filter:blur(8px)}
+.trd-registration-success[hidden]{display:none}
+.trd-registration-card{width:min(560px,100%);padding:34px;border:1px solid rgba(182,231,255,.14);border-radius:26px;background:linear-gradient(145deg,#0b2639,#061823);color:#eef8fb;text-align:center;box-shadow:0 30px 100px rgba(0,0,0,.5)}
+.trd-registration-check{width:68px;height:68px;margin:0 auto 18px;display:grid;place-items:center;border-radius:50%;background:rgba(64,220,159,.10);border:1px solid rgba(64,220,159,.3);color:#42dc9f;font-size:34px}
+.trd-registration-card .eyebrow{display:block}.trd-registration-card h2{margin:8px 0 10px;font-family:'Barlow Condensed',Barlow,sans-serif;font-size:36px}.trd-registration-card p{margin:0;color:#a9bec9;line-height:1.65;font-size:13px}.trd-registration-status{display:flex;align-items:center;justify-content:center;gap:9px;margin:22px 0;padding:13px 16px;border-radius:13px;background:rgba(25,220,229,.055);border:1px solid rgba(25,220,229,.13);font-size:12px}.trd-registration-status b{color:#f0c95a}.trd-registration-card .btn{margin-top:20px}
 `;
   document.head.appendChild(style);
+
+  function showRegistrationSuccess(){
+    let modal=document.querySelector('#trdRegistrationSuccess');
+    if(!modal){
+      modal=document.createElement('div');modal.id='trdRegistrationSuccess';modal.className='trd-registration-success';modal.hidden=true;
+      modal.innerHTML=`<div class="trd-registration-card" role="dialog" aria-modal="true" aria-labelledby="trdRegistrationSuccessTitle"><div class="trd-registration-check">✓</div><span class="eyebrow">TRD LA REGIONAL ESMERALDA</span><h2 id="trdRegistrationSuccessTitle">¡Solicitud enviada!</h2><p>Hemos recibido correctamente tu solicitud de participación en el <strong>Torneo Regional de Debate de la Regional 17</strong>.</p><div class="trd-registration-status"><span>●</span><b> Pendiente de revisión</b></div><p>Tu información será revisada por el equipo organizador. Cuando tu solicitud sea aprobada, recibirás una comunicación en el correo electrónico proporcionado.</p><button type="button" class="btn primary" data-close-registration-success>Entendido</button></div>`;
+      document.body.appendChild(modal);
+      modal.querySelector('[data-close-registration-success]').onclick=()=>{modal.hidden=true};
+      modal.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true});
+    }
+    modal.hidden=false;
+  }
+
+  const registrationMessageObserver=new MutationObserver(()=>{
+    const message=document.querySelector('#formMessage');
+    if(message&&/inscripci[oó]n enviada/i.test(message.textContent||'')) showRegistrationSuccess();
+  });
+  registrationMessageObserver.observe(document.body,{subtree:true,childList:true,characterData:true});
 
   const participantScript=document.createElement('script');
   participantScript.src='participants-details.js';
