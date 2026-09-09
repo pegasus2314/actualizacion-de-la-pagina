@@ -51,3 +51,64 @@ const fichaStyle=document.createElement('style');fichaStyle.textContent=`
 @media(max-width:620px){.team-detail-dialog{width:calc(100vw - 18px);border-radius:19px}.team-detail-dialog .team-ficha-header,.team-detail-dialog .team-ficha-body{padding:20px}.team-detail-dialog .team-ficha-top{gap:10px}.team-detail-dialog h2{font-size:31px}.team-detail-dialog .team-ficha-grid{grid-template-columns:1fr}.team-detail-dialog .team-ficha-footer{padding:14px 20px}.team-detail-dialog .team-ficha-member{grid-template-columns:30px 1fr}.team-detail-dialog .team-ficha-member .btn,.team-detail-dialog .team-ficha-member .qr-btn{grid-column:2;justify-self:start}}
 `;document.head.appendChild(fichaStyle);
 })();
+
+(()=>{
+const db=supabase.createClient('https://bstdgcpakqmltifzaqso.supabase.co','sb_publishable_-39OPIl11i5GSPBbF3q0ew_puLiVK7N');
+const esc=v=>String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]));
+const label=s=>s==='approved'?'Aprobado':s==='rejected'?'Rechazado':'Pendiente';
+const type=r=>r==='alternate'?'Suplente':'Debatiente';
+const render=async id=>{
+  const [{data:t,error:te},{data:coach},{data:debaters}]=await Promise.all([
+    db.from('esmeralda_teams').select('*').eq('id',id).maybeSingle(),
+    db.from('esmeralda_coaches').select('full_name,email,phone,school_name').eq('team_id',id).maybeSingle(),
+    db.from('esmeralda_debaters').select('full_name,email,role').eq('team_id',id).order('created_at')
+  ]);
+  if(te||!t){alert('Equipo no encontrado.');return}
+  let d=document.getElementById('teamDetailDialog');
+  if(!d){d=document.createElement('dialog');d.id='teamDetailDialog';document.body.appendChild(d)}
+  const members=debaters||[];
+  d.innerHTML=`<div class="team-ficha-shell">
+    <header class="team-ficha-header">
+      <div class="team-ficha-top">
+        <div class="team-ficha-title"><span class="eyebrow">FICHA DEL EQUIPO</span><h2>${esc(t.team_name)}</h2><p>${esc(t.school_name)}${t.district?' · '+esc(t.district):''}</p></div>
+        <span class="team-ficha-status">${label(t.status)}</span>
+      </div>
+      <div class="team-ficha-grid">
+        <div class="team-ficha-item"><span>Responsable</span><strong>${esc(t.contact_name||'—')}</strong></div>
+        <div class="team-ficha-item"><span>Correo</span><strong>${esc(t.contact_email||'—')}</strong></div>
+        <div class="team-ficha-item"><span>Teléfono</span><strong>${esc(t.contact_phone||'—')}</strong></div>
+        <div class="team-ficha-item"><span>Distrito</span><strong>${esc(t.district||'—')}</strong></div>
+      </div>
+    </header>
+    <main class="team-ficha-body">
+      <section class="team-ficha-section">
+        <div class="team-ficha-section-title"><strong>Docente Coach</strong></div>
+        <div class="team-ficha-coach"><div class="team-ficha-avatar">C</div><div><strong>${coach?esc(coach.full_name):'No registrado'}</strong><small>${coach?[esc(coach.email||'Sin correo'),coach.phone?esc(coach.phone):null].filter(Boolean).join(' · '):'Este equipo aún no tiene un coach registrado.'}</small></div></div>
+      </section>
+      <section class="team-ficha-section">
+        <div class="team-ficha-section-title"><strong>Integrantes</strong><span class="team-ficha-count">${members.length}</span></div>
+        <div class="team-ficha-members">${members.length?members.map((m,i)=>`<div class="team-ficha-member"><span class="team-ficha-number">${i+1}</span><div><strong>${esc(m.full_name||'Sin nombre')}</strong><small>${esc(type(m.role))}${m.email?' · '+esc(m.email):''}</small></div></div>`).join(''):'<div class="empty">Sin integrantes registrados.</div>'}</div>
+      </section>
+    </main>
+    <footer class="team-ficha-footer">
+      <button type="button" class="btn outline" data-team-close>Cerrar</button>
+      ${t.status!=='approved'?`<button type="button" class="btn primary" data-action="approve" data-id="${esc(t.id)}">Aprobar equipo</button>`:''}
+      ${t.status!=='rejected'?`<button type="button" class="btn danger" data-action="reject" data-id="${esc(t.id)}">Rechazar</button>`:''}
+    </footer>
+  </div>`;
+  d.showModal();
+  d.querySelector('[data-team-close]')?.addEventListener('click',()=>d.close());
+};
+document.addEventListener('click',e=>{
+  const target=e.target.closest('[data-action="view-team"]');
+  if(!target)return;
+  e.stopPropagation();e.preventDefault();render(target.dataset.id);
+},true);
+document.addEventListener('click',e=>{if(e.target.id==='teamDetailDialog')e.target.close()});
+const s=document.createElement('style');s.textContent=`
+.team-ficha-shell{width:min(760px,calc(100vw - 28px));max-height:min(86vh,720px);display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden;border:1px solid rgba(182,231,255,.14);border-radius:24px;background:#081b2a;color:#edf8fb;box-shadow:0 28px 80px rgba(0,0,0,.5)}
+.team-ficha-shell .team-ficha-header{padding:24px 26px 20px;background:linear-gradient(145deg,#0e2b40,#081b2a);border-bottom:1px solid rgba(182,231,255,.10)}
+.team-ficha-shell .team-ficha-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.team-ficha-shell .team-ficha-title{display:grid;gap:6px;min-width:0}.team-ficha-shell h2{margin:0;font-family:'Barlow Condensed',sans-serif;font-size:36px;line-height:1;overflow-wrap:anywhere}.team-ficha-shell p{margin:0;color:#8fa8b6;font-size:12px}.team-ficha-shell .team-ficha-status{flex:none;padding:7px 11px;border-radius:999px;border:1px solid rgba(25,220,229,.24);background:rgba(25,220,229,.08);color:#a8eef1;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}.team-ficha-shell .team-ficha-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:17px}.team-ficha-shell .team-ficha-item{padding:10px 12px;border:1px solid rgba(182,231,255,.09);border-radius:11px;background:rgba(3,15,25,.28);min-width:0}.team-ficha-shell .team-ficha-item span{display:block;margin-bottom:3px;color:#6f8a99;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.09em}.team-ficha-shell .team-ficha-item strong{display:block;color:#e8f5f8;font-size:12px;overflow-wrap:anywhere}.team-ficha-shell .team-ficha-body{min-height:0;overflow:auto;padding:18px 26px}.team-ficha-shell .team-ficha-section+ .team-ficha-section{margin-top:17px}.team-ficha-shell .team-ficha-section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}.team-ficha-shell .team-ficha-section-title strong{font-size:13px}.team-ficha-shell .team-ficha-count{display:grid;place-items:center;min-width:25px;height:25px;padding:0 7px;border-radius:8px;background:rgba(25,220,229,.08);border:1px solid rgba(25,220,229,.18);color:#19dce5;font-size:10px;font-weight:800}.team-ficha-shell .team-ficha-coach{display:grid;grid-template-columns:36px 1fr;gap:10px;padding:11px 12px;border:1px solid rgba(182,231,255,.09);border-radius:12px;background:rgba(3,15,25,.30)}.team-ficha-shell .team-ficha-avatar{width:36px;height:36px;display:grid;place-items:center;border-radius:10px;background:rgba(25,220,229,.08);border:1px solid rgba(25,220,229,.18);color:#19dce5;font-size:12px;font-weight:800}.team-ficha-shell .team-ficha-coach strong{display:block;font-size:13px}.team-ficha-shell .team-ficha-coach small{display:block;margin-top:3px;color:#829ba9;font-size:10px;overflow-wrap:anywhere}.team-ficha-shell .team-ficha-members{display:grid;gap:7px}.team-ficha-shell .team-ficha-member{display:grid;grid-template-columns:30px minmax(0,1fr);align-items:center;gap:10px;padding:9px 11px;border:1px solid rgba(182,231,255,.09);border-radius:11px;background:rgba(3,15,25,.24)}.team-ficha-shell .team-ficha-number{width:28px;height:28px;display:grid;place-items:center;border-radius:8px;background:rgba(25,220,229,.07);color:#19dce5;font-size:10px;font-weight:800}.team-ficha-shell .team-ficha-member strong{display:block;font-size:12px}.team-ficha-shell .team-ficha-member small{display:block;margin-top:2px;color:#829ba9;font-size:9px;overflow-wrap:anywhere}.team-ficha-shell .team-ficha-footer{display:flex;justify-content:flex-end;gap:8px;padding:13px 26px;border-top:1px solid rgba(182,231,255,.09);background:rgba(4,15,24,.52)}.team-ficha-shell .team-ficha-footer .btn{min-height:38px}.team-detail-dialog:has(.team-ficha-shell){padding:0;overflow:hidden;background:transparent;border:0;max-width:none;max-height:none}.team-detail-dialog:has(.team-ficha-shell)::backdrop{background:rgba(1,8,16,.82);backdrop-filter:blur(6px)}
+@media(max-width:620px){.team-ficha-shell{width:calc(100vw - 16px);max-height:90vh;border-radius:18px}.team-ficha-shell .team-ficha-header,.team-ficha-shell .team-ficha-body{padding:17px}.team-ficha-shell .team-ficha-footer{padding:12px 17px;flex-wrap:wrap}.team-ficha-shell .team-ficha-top{gap:9px}.team-ficha-shell h2{font-size:30px}.team-ficha-shell .team-ficha-grid{grid-template-columns:1fr}.team-ficha-shell .team-ficha-footer .btn{flex:1}.team-ficha-shell .team-ficha-member{padding:8px 10px}}
+`;document.head.appendChild(s);
+})();
