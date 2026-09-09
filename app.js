@@ -17,6 +17,18 @@
     return `<svg class="trd-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths[name]||''}</svg>`;
   };
 
+  const replaceLeadingIcon=(el,name)=>{
+    if(!el)return;
+    const existing=el.querySelector(':scope > .trd-icon');
+    if(existing)return;
+    const text=[...el.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join('').trim();
+    const symbols=/^[⌂▤♙◉⌖♟⚙]+(?:\s|&nbsp;| )*$/;
+    [...el.childNodes].forEach(n=>{
+      if(n.nodeType===3&&symbols.test(n.textContent.trim()))n.remove();
+    });
+    el.insertAdjacentHTML('afterbegin',icon(name));
+  };
+
   const restoreIcons=()=>{
     if(document.documentElement.dataset.trdIcons==='1')return;
     document.documentElement.dataset.trdIcons='1';
@@ -27,28 +39,30 @@
     const navIcons={Inicio:'home',Inscripción:'clipboard',Participantes:'users','El torneo':'trophy',Logística:'pin'};
     document.querySelectorAll('.nav a[data-view]').forEach(a=>{
       const label=a.querySelector('span')?.textContent.trim();
-      if(navIcons[label])a.insertAdjacentHTML('afterbegin',icon(navIcons[label]));
-      const first=a.firstChild;
-      if(first&&first.nodeType===3)first.textContent='';
+      if(navIcons[label])replaceLeadingIcon(a,navIcons[label]);
     });
 
-    const admin=document.querySelector('#adminBtn');
-    if(admin){admin.insertAdjacentHTML('afterbegin',icon('settings'));const n=admin.firstChild;if(n&&n.nodeType===3)n.textContent='';}
+    replaceLeadingIcon(document.querySelector('#adminBtn'),'settings');
 
     document.querySelectorAll('.hero-actions a.btn').forEach(a=>{
-      const text=a.textContent.trim();
-      const name=text.includes('Inscribir')?'trophy':'users';
-      a.insertAdjacentHTML('afterbegin',icon(name));
-      const n=a.firstChild;if(n&&n.nodeType===3)n.textContent='';
+      const name=a.textContent.includes('Inscribir')?'trophy':'users';
+      replaceLeadingIcon(a,name);
     });
 
-    document.querySelectorAll('.competition-card').forEach(card=>{
+    const cardIcons=['clipboard','users','trophy','pin'];
+    document.querySelectorAll('.competition-card').forEach((card,index)=>{
       const span=card.querySelector(':scope>span');
-      if(!span||span.querySelector('.trd-icon'))return;
-      const symbol=span.textContent.trim();
-      const name=symbol==='♟'?'clipboard':symbol==='♙'?'users':symbol==='◉'?'trophy':'pin';
-      span.innerHTML=icon(name);
+      if(span)span.innerHTML=icon(cardIcons[index]||'trophy');
     });
+  };
+
+  const bindAdminButton=()=>{
+    const admin=document.querySelector('#adminBtn');
+    const dialog=document.querySelector('#loginDialog');
+    if(admin&&dialog&&!admin.dataset.trdAdminBound){
+      admin.dataset.trdAdminBound='1';
+      admin.addEventListener('click',e=>{e.preventDefault();dialog.showModal?.();dialog.classList.remove('hidden');});
+    }
   };
 
   const loadSupabase=()=>new Promise((resolve,reject)=>{
@@ -114,6 +128,7 @@
 
   const start=async()=>{
     restoreIcons();
+    bindAdminButton();
     try{
       const client=await ensureClient();
       console.log('TRD Supabase local cargado correctamente');
