@@ -1,0 +1,16 @@
+(()=>{'use strict';
+const URL='https://bstdgcpakqmltifzaqso.supabase.co';
+const KEY='sb_publishable_-39OPIl11i5GSPBbF3q0ew_puLiVK7N';
+const client=window.supabase?.createClient?window.supabase.createClient(URL,KEY):null;
+const norm=s=>String(s||'').trim().replace(/\s+/g,' ').toLowerCase();
+const esc=s=>String(s||'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]));
+async function eventId(){const {data}=await client.from('esmeralda_events').select('id').eq('slug','trd-la-regional-esmeralda').maybeSingle();return data?.id||null}
+function makeBox(input,kind){let box=document.createElement('div');box.className='trd-school-people';box.dataset.kind=kind;input.insertAdjacentElement('afterend',box);return box}
+function setupField(input,kind){if(!input||input.dataset.trdSchoolReady)return;input.dataset.trdSchoolReady='1';input.setAttribute('list',kind==='coach'?'trd-centers-coach':'trd-centers');const box=makeBox(input,kind);let timer;
+const update=async()=>{const school=input.value.trim();if(!school){box.innerHTML='';box.classList.remove('show');return}box.classList.add('show');box.innerHTML='<span class="trd-school-loading">Consultando participantes registrados…</span>';clearTimeout(timer);timer=setTimeout(async()=>{if(!client){box.innerHTML='';return}const eid=await eventId();if(!eid){box.innerHTML='';return}const {data,error}=await client.rpc('trd_school_participant_count',{p_event_id:eid,p_school_name:school});if(error){console.error('trd_school_participant_count',error);box.innerHTML='<span class="trd-school-muted">No se pudo consultar el registro ahora.</span>';return}const count=Number(data?.count||0);box.innerHTML=`<strong>${count}</strong><span>${count===1?'participante registrado':'participantes registrados'} de este centro</span>${kind==='coach'?'<small>Este dato corresponde a participantes del centro, no al docente.</small>':''}`},180)};
+input.addEventListener('input',update);input.addEventListener('change',update);input.addEventListener('blur',update)}
+function datalist(){if(document.getElementById('trd-centers'))return;const names=[...document.querySelectorAll('#centros .centro-card h3,.centro-card h3')].map(x=>x.textContent.trim()).filter(Boolean);if(!names.length)return;['trd-centers','trd-centers-coach'].forEach(id=>{const dl=document.createElement('datalist');dl.id=id;[...new Set(names)].forEach(n=>{const o=document.createElement('option');o.value=n;dl.appendChild(o)});document.body.appendChild(dl)})}
+function init(){if(!client)return;datalist();setupField(document.querySelector('#registrationForm input[name="school_name"]'),'school');setupField(document.querySelector('#registrationForm input[name="coach_school"]'),'coach')}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+new MutationObserver(()=>{datalist();setupField(document.querySelector('#registrationForm input[name="school_name"]'),'school');setupField(document.querySelector('#registrationForm input[name="coach_school"]'),'coach')}).observe(document.body,{childList:true,subtree:true});
+})();
