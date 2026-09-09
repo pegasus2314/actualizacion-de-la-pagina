@@ -1,32 +1,81 @@
 (()=>{
-'use strict';
-const CORE='./app-core.js';
-const districts=[['17-01','Yamasá'],['17-02','Monte Plata'],['17-03','Bayaguana'],['17-04','Sabana Grande de Boyá'],['17-05','Peralvillo']];
-let centers=[
-['17-01','', 'Angel María Santa María'],['17-01','', 'Brígido Nolasco'],['17-01','', 'Centro Educativo Fray Pedro de Córdoba'],['17-01','', 'Escuela Guazumita'],['17-01','', 'José de la Luz Guillén'],['17-01','', 'Liceo Patricio Ramírez'],['17-01','', 'Liceo Secundario San Martín de Porres'],['17-01','', 'Otilio Núñez'],['17-01','', 'Politécnico General Eusebio Manzueta'],['17-01','', 'Politécnico José de la Luz Guillén'],['17-01','', 'Politécnico José Reyes'],['17-01','', 'Politécnico Parroquial Sor Susana Daly'],['17-01','', 'Politécnico Virginia Fidelina Matos de la Cruz'],
-['17-02','', 'Centro Otaña'],['17-02','', 'COCREF Bermejo'],['17-02','', 'Don Juan'],['17-02','', 'El Dean'],['17-02','', 'Escuela La Jagua'],['17-02','', 'Frías'],['17-02','', 'Liceo Académico El Cacique'],['17-02','', 'Liceo Asia Luisa Concepción de Jesús'],['17-02','', 'Liceo Gregorio Luperón'],['17-02','', 'Liceo Madre Ascensión Nicol'],['17-02','', 'Liceo Mata Limón'],['17-02','', 'Liceo Prof. Francis Matías'],['17-02','', 'Liceo Prof. Rogelio Guzmán'],['17-02','', 'Liceo Soriano Guzmán'],['17-02','', 'Mata Los Indios'],['17-02','', 'Politécnico Ciudad del Conocimiento'],['17-02','', 'Politécnico José Francisco Peña Gómez'],['17-02','', 'Politécnico Julio Abreu Cuello'],['17-02','', 'Politécnico PROMAPEC'],['17-02','', 'Santa María Roselló'],
-['17-03','', 'Centro Educativo 27 de Febrero'],['17-03','', 'Centro Educativo Dominica'],['17-03','', 'Centro Educativo Eulogio Carreras (Adonai)'],['17-03','', 'Centro Educativo José Pantaleón Castillo'],['17-03','', 'Centro Educativo Morayma Veloz de Báez (Básica)'],['17-03','', 'Liceo Parroquial María Eugenio de Hostos'],['17-03','', 'Liceo Sabana del Medio'],['17-03','', 'Politécnico Deportivo Prof. Morayma Veloz de Báez'],['17-03','', 'Politécnico en Artes Prof. Félix Rafael Nova'],['17-03','', 'Reynaldo Antonio Contreras'],['17-03','', 'Timoteo Ogando'],
-['17-04','', 'Corazón de Jesús'],['17-04','', 'Liceo Juan Isidro Pérez'],['17-04','', 'Liceo Presbítero Carlos Nouel'],['17-04','', 'Liceo profesor Antonio Polanco'],['17-04','', 'Liceo Rosa Duarte'],['17-04','', 'Liceo Yolanda Esther Rivera'],['17-04','', 'Minerva Miraval'],['17-04','', 'Politécnico Gregorio Aybar Contreras'],
-['17-05','', 'Andrés Díaz (Primario y Secundario)'],['17-05','', 'Colegio San José'],['17-05','', 'Gregorio Luperón'],['17-05','', 'Hilario Vásquez'],['17-05','', 'Liceo Raúl Matos'],['17-05','', 'Prof. Diogenes Emilio de Jesús'],['17-05','', 'Prof. Eduardo Custodio (Primario y secundario)'],['17-05','', 'Prof. Juan Bosch'],['17-05','', 'Ramón Morel Santo']
-];
-function load(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.head.appendChild(s);});}
-const icons={home:'<svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10H3z"/><path d="M9 21v-7h6v7"/></svg>',form:'<svg viewBox="0 0 24 24"><path d="M6 3h12v18H6z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>',users:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.5"/><path d="M14 20a4.5 4.5 0 0 1 7 0"/></svg>',trophy:'<svg viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H4v2a4 4 0 0 0 4 4M16 6h4v2a4 4 0 0 1-4 4M12 13v4M8 21h8M9 17h6"/></svg>',pin:'<svg viewBox="0 0 24 24"><path d="M12 21s7-6.1 7-12A7 7 0 0 0 5 9c0 5.9 7 12 7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg>',gear:'<svg viewBox="0 0 24 24"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/><circle cx="12" cy="12" r="3.5"/></svg>',school:'<svg viewBox="0 0 24 24"><path d="m3 9 9-5 9 5-9 5zM5 11v7l7 3 7-3v-7M9 19v-5"/></svg>',round:'<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/><circle cx="18" cy="17" r="2"/></svg>',match:'<svg viewBox="0 0 24 24"><path d="M5 4l14 16M19 4 5 20"/><path d="M5 4h5M19 4h-5M5 20h5M19 20h-5"/></svg>',pair:'<svg viewBox="0 0 24 24"><circle cx="7" cy="12" r="3"/><circle cx="17" cy="12" r="3"/><path d="M10 12h4"/></svg>',notice:'<svg viewBox="0 0 24 24"><path d="M5 6h14v12H5z"/><path d="M8 9h8M8 13h6"/></svg>',people:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.5"/><path d="M14 20a4.5 4.5 0 0 1 7 0"/></svg>',judge:'<svg viewBox="0 0 24 24"><path d="M8 4h8M12 4v5M7 9h10M6 9l-2 4a3 3 0 0 0 6 0L8 9M18 9l-2 4a3 3 0 0 0 6 0l-2-4M12 9v8M8 21h8"/></svg>',staff:'<svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.2 8.2-8 10-4.8-1.8-8-5-8-10V6l8-3Z"/><path d="m9 12 2 2 4-4"/></svg>'};
-function iconFor(label){const t=(label||'').toLowerCase();if(t.includes('resumen'))return icons.home;if(t.includes('equipo'))return icons.users;if(t.includes('ronda'))return icons.round;if(t.includes('enfrent'))return icons.match;if(t.includes('pareja'))return icons.pair;if(t.includes('anuncio'))return icons.notice;return icons.gear}
-function decorateNavigation(){document.querySelectorAll('.nav a[data-view]').forEach(a=>{const label=a.querySelector('span:last-child')?.textContent?.trim()||a.textContent.trim();if(!a.querySelector('.trd-nav-icon')){const old=a.firstChild;if(old&&old.nodeType===3)old.remove();const i=document.createElement('span');i.className='trd-nav-icon';i.innerHTML=label.toLowerCase().includes('inscrip')?icons.form:label.toLowerCase().includes('particip')?icons.users:label.toLowerCase().includes('torneo')?icons.trophy:label.toLowerCase().includes('log')?icons.pin:label.toLowerCase().includes('centro')?icons.school:icons.home;a.prepend(i);}});const b=document.getElementById('adminBtn');if(b&&!b.querySelector('.trd-nav-icon'))b.innerHTML='<span class="trd-nav-icon">'+icons.gear+'</span><span>Administración</span>';}
-function enhanceAccreditation(){const normalize=s=>(s||'').replace(/\s+/g,' ').trim().toLowerCase();const roleFor=s=>{const t=normalize(s);if(t==='participantes'||t.startsWith('participantes '))return'participantes';if(t==='jueces'||t.startsWith('jueces '))return'jueces';if(t==='staff'||t.startsWith('staff '))return'staff';return null};document.querySelectorAll('h1,h2,h3,h4,h5,h6,strong,b,p,span,div').forEach(title=>{if(normalize(title.textContent)!=='acreditación del torneo')return;const root=title.closest('.admin-card,.card,article,section,div');if(!root||root.dataset.trdAccreditationReady)return;const byRole={};root.querySelectorAll('button,a,[role="button"],div,article').forEach(el=>{const r=roleFor(el.textContent);if(r&&!byRole[r]&&el.children.length<=3)byRole[r]=el});if(!byRole.participantes||!byRole.jueces||!byRole.staff)return;const items=[byRole.participantes,byRole.jueces,byRole.staff],parent=items[0].parentElement;root.dataset.trdAccreditationReady='1';root.classList.add('trd-accreditation');parent.classList.add('trd-accreditation-options');items.forEach(item=>{const role=roleFor(item.textContent);item.classList.add('trd-accreditation-option');item.dataset.accreditationRole=role;if(!item.querySelector('.trd-accreditation-icon')){const icon=document.createElement('span');icon.className='trd-accreditation-icon';icon.innerHTML=role==='participantes'?icons.people:role==='jueces'?icons.judge:icons.staff;item.prepend(icon)}})})}
-function upgradePanels(){const style=document.createElement('style');style.textContent=`
-.trd-nav-icon,.admin-icon,.panel-icon,.panel-card-icon,.trd-accreditation-icon{display:inline-grid;place-items:center;flex:0 0 auto}.trd-nav-icon svg,.admin-icon svg,.panel-icon svg,.panel-card-icon svg,.centro-card-icon svg,.trd-accreditation-icon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.trd-nav-icon{width:18px;height:18px}.nav a{gap:8px}.nav a.active{color:#fff}.nav a.active .trd-nav-icon{color:var(--cyan)}
-#admin{padding-top:22px}.admin-nav{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px!important;padding:9px!important;margin-bottom:18px!important;border:1px solid rgba(182,231,255,.09);border-radius:18px;background:linear-gradient(145deg,rgba(7,24,37,.94),rgba(4,17,27,.78));box-shadow:0 18px 45px rgba(0,0,0,.16)}.admin-nav button{position:relative;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:82px!important;padding:12px 8px!important;border:1px solid transparent!important;border-radius:14px!important;background:transparent!important;color:#829ba9!important;transition:.18s ease}.admin-nav button .admin-icon{width:34px;height:34px;padding:8px;border-radius:11px;background:rgba(182,231,255,.045);border:1px solid rgba(182,231,255,.09);color:#79dce2}.admin-nav button span:last-child{font-size:11px;font-weight:700;white-space:nowrap}.admin-nav button.active,.admin-nav button:hover{color:#fff!important;background:rgba(25,220,229,.065)!important;border-color:rgba(25,220,229,.28)!important;transform:translateY(-2px)!important}.admin-nav button.active::after{content:"";position:absolute;left:24%;right:24%;bottom:0;height:2px;border-radius:99px;background:var(--cyan)}
-.admin-content{padding:26px!important;border-radius:20px!important;background:linear-gradient(145deg,rgba(11,32,48,.98),rgba(6,22,34,.99))!important}.admin-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:14px!important}.admin-card{min-height:128px;padding:19px!important;border-radius:16px!important;background:linear-gradient(145deg,rgba(13,36,53,.88),rgba(6,22,34,.92))!important;border:1px solid rgba(182,231,255,.10)!important}.panel-card-icon{width:40px;height:40px;margin-bottom:14px;padding:9px;border-radius:12px;background:rgba(25,220,229,.065);border:1px solid rgba(25,220,229,.17);color:var(--cyan)}
-.trd-accreditation{padding:22px!important;border-radius:20px!important;border:1px solid rgba(182,231,255,.11)!important;background:linear-gradient(145deg,rgba(12,34,50,.98),rgba(6,21,33,.99))!important}.trd-accreditation-options{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px!important;margin-top:18px!important}.trd-accreditation-option{display:flex!important;flex-direction:column!important;min-height:150px!important;padding:20px!important;border:1px solid rgba(182,231,255,.10)!important;border-radius:16px!important;background:linear-gradient(145deg,rgba(15,40,58,.92),rgba(7,24,37,.98))!important;color:#eef8fb!important;text-decoration:none!important}.trd-accreditation-icon{width:44px;height:44px;padding:10px;margin-bottom:15px;border-radius:13px;background:rgba(25,220,229,.07);border:1px solid rgba(25,220,229,.18);color:var(--cyan)}
-.home-intro{padding-top:54px!important;padding-bottom:78px!important}.home-intro .section-heading{display:block!important;margin-bottom:28px!important}.home-intro .section-heading>div{max-width:760px}.home-intro .section-heading h2{margin:6px 0 8px!important;font-size:clamp(38px,5vw,54px)!important;line-height:.98!important}.home-intro .section-heading p{max-width:650px!important;margin:0!important;text-align:left!important;color:#8fa8b6!important;font-size:13px!important;line-height:1.6!important}.home-intro .competition-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:14px!important}.home-intro .competition-card{display:flex!important;flex-direction:column!important;min-height:238px!important;padding:22px!important;border:1px solid rgba(182,231,255,.11)!important;border-radius:18px!important;background:linear-gradient(155deg,rgba(15,40,58,.96),rgba(7,23,35,.99))!important;text-decoration:none!important}.home-intro .competition-card b{margin-top:18px!important;font-size:27px!important}.home-intro .competition-card small{margin-top:8px!important;font-size:12px!important;line-height:1.55!important;color:#8ea7b4!important}.home-intro .competition-card strong{margin-top:auto!important;padding-top:22px!important;color:var(--cyan)!important;font-size:11px!important;text-transform:uppercase!important}
-.centros-summary>div{display:grid!important;grid-template-columns:42px 1fr!important;grid-template-rows:auto auto!important;column-gap:12px;align-items:center}.centros-summary>div .panel-icon{grid-row:1/3;width:40px;height:40px;padding:9px;border-radius:11px;background:rgba(25,220,229,.07);border:1px solid rgba(25,220,229,.18);color:var(--cyan)}.centro-card-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:11px;background:rgba(25,220,229,.06);border:1px solid rgba(25,220,229,.16);color:var(--cyan)}
-@media(max-width:1050px){.admin-nav{grid-template-columns:repeat(3,minmax(0,1fr))}.admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.trd-accreditation-options,.home-intro .competition-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}@media(max-width:620px){.admin-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-grid,.trd-accreditation-options,.home-intro .competition-grid{grid-template-columns:1fr!important}.nav a span:last-child{display:none}.home-intro{padding-top:42px!important}}
-`;document.head.appendChild(style);document.querySelectorAll('.admin-nav button').forEach(b=>{if(b.querySelector('.admin-icon'))return;const icon=document.createElement('span');icon.className='admin-icon';icon.innerHTML=iconFor(b.textContent);b.prepend(icon)});enhanceAccreditation();new MutationObserver(enhanceAccreditation).observe(document.body,{childList:true,subtree:true})}
-function ensureCentros(){const nav=document.querySelector('.nav'),main=document.querySelector('main');if(!nav||!main)return;if(!nav.querySelector('[data-view="centros"]')){const a=document.createElement('a');a.href='#centros';a.dataset.view='centros';a.innerHTML='<span class="trd-nav-icon">'+icons.school+'</span><span>Centros educativos</span>';nav.appendChild(a)}let section=document.getElementById('centros');if(!section){section=document.createElement('section');section.id='centros';section.className='section view-section view-hidden';section.innerHTML='<div class="section-heading"><div><span class="eyebrow">REGIONAL 17 · EDUCACIÓN</span><h2>Centros educativos</h2></div><p>Directorio de centros educativos de los cinco distritos de la Regional 17.</p></div><div class="centros-summary"><div><span class="panel-icon">'+icons.school+'</span><strong id="centrosTotal">'+centers.length+'</strong><span>centros registrados</span></div><div><span class="panel-icon">'+icons.pin+'</span><strong>'+districts.length+'</strong><span>distritos educativos</span></div></div><div class="centros-filters"><button type="button" class="btn small primary" data-centro-filter="all">Todos</button>'+districts.map(d=>'<button type="button" class="btn small outline" data-centro-filter="'+d[0]+'">'+d[0]+' · '+d[1]+'</button>').join('')+'</div><div id="centrosGrid" class="centros-grid"></div>';main.appendChild(section)}renderCentros('all')}
-function renderCentros(filter='all'){const grid=document.getElementById('centrosGrid');if(!grid)return;const list=filter==='all'?centers:centers.filter(c=>c[0]===filter);grid.innerHTML=list.map(c=>'<article class="centro-card"><div class="centro-top"><span class="centro-card-icon">'+icons.school+'</span>'+((c[1])?'<span class="centro-code">'+c[1]+'</span>':'')+'<span class="centro-district">'+c[0]+'</span></div><h3>'+c[2]+'</h3><div class="centro-card-meta"><span>Centro educativo</span><span>'+(districts.find(d=>d[0]===c[0])?.[1]||c[0])+'</span></div></article>').join('')}
-function showView(id){if(id==='centros')ensureCentros();const section=document.getElementById(id);if(!section)return;document.querySelectorAll('.view-section').forEach(s=>s.classList.toggle('view-hidden',s.id!==id));document.querySelectorAll('.nav a[data-view]').forEach(a=>a.classList.toggle('active',a.dataset.view===id));document.body.classList.add('viewing-section');window.scrollTo({top:0,behavior:'instant'})}
-function bind(){document.addEventListener('click',e=>{const filter=e.target.closest?.('[data-centro-filter]');if(filter){e.preventDefault();document.querySelectorAll('[data-centro-filter]').forEach(b=>{b.classList.toggle('primary',b===filter);b.classList.toggle('outline',b!==filter)});renderCentros(filter.dataset.centroFilter);return}const link=e.target.closest?.('.nav a[data-view],a[data-view]');if(link){e.preventDefault();showView(link.dataset.view);history.pushState(null,'','#'+link.dataset.view)}},true);window.addEventListener('popstate',()=>{const id=location.hash.slice(1)||'inicio';if(id!=='admin')showView(document.getElementById(id)?id:'inicio')})}
-function polish(){const style=document.createElement('style');style.textContent='.view-section.view-hidden{display:none!important}.centros-filters{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}.centros-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.centro-card{padding:20px;border:1px solid rgba(182,231,255,.1);border-radius:16px;background:linear-gradient(145deg,rgba(12,34,49,.96),rgba(7,23,35,.98));transition:.18s ease}.centro-card:hover{transform:translateY(-3px);border-color:rgba(25,220,229,.28)}.centro-card h3{font:700 23px/1.08 "Barlow Condensed",sans-serif;margin:15px 0}.centro-card-meta{display:flex;justify-content:space-between;gap:10px;color:#829ba9;font-size:10px}.centro-top{display:flex;align-items:center;gap:8px}.centro-code{margin-left:auto;color:#7893a1;font:600 13px "Barlow Condensed",sans-serif}.centro-district{font-size:9px;padding:5px 7px;border-radius:7px;background:rgba(25,220,229,.07);color:#9de2e6;font-weight:800}@media(max-width:900px){.centros-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:650px){.centros-grid{grid-template-columns:1fr}}';document.head.appendChild(style)}
-(async()=>{try{await load(CORE);bind();polish();decorateNavigation();ensureCentros();upgradePanels();const id=location.hash.slice(1)||'inicio';if(id!=='admin')showView(document.getElementById(id)?id:'inicio');console.log('TRD core local cargado correctamente')}catch(err){console.error('No se pudo cargar el núcleo local de TRD',err)}})();
+  'use strict';
+
+  const CORE='./app-core.js';
+  const EVENT_ID='0f2469a3-e670-4fb9-a183-d0db60526372';
+
+  const loadScript=(src)=>new Promise((resolve,reject)=>{
+    const existing=document.querySelector(`script[src="${src}"]`);
+    if(existing){resolve();return;}
+    const script=document.createElement('script');
+    script.src=src;
+    script.async=false;
+    script.onload=resolve;
+    script.onerror=()=>reject(new Error(`No se pudo cargar ${src}`));
+    document.head.appendChild(script);
+  });
+
+  const refreshPublic=()=>{
+    try{
+      if(typeof window.loadStats==='function') window.loadStats();
+      if(typeof window.loadPublicTeams==='function') window.loadPublicTeams();
+    }catch(error){
+      console.error('TRD realtime refresh público',error);
+    }
+    window.dispatchEvent(new CustomEvent('trd:data-changed'));
+    const grid=document.querySelector('#teamsGrid');
+    if(grid) grid.dispatchEvent(new CustomEvent('trd:reload-participants'));
+  };
+
+  const refreshAdmin=()=>{
+    try{
+      if(typeof window.loadAdmin==='function' && window.location.hash==='#admin') window.loadAdmin();
+    }catch(error){
+      console.error('TRD realtime refresh admin',error);
+    }
+    window.dispatchEvent(new CustomEvent('trd:admin-data-changed'));
+  };
+
+  const setupRealtime=()=>{
+    const client=window.__TRD_DB;
+    if(!client || typeof client.channel!=='function'){
+      console.warn('TRD realtime: cliente Supabase no disponible todavía');
+      return;
+    }
+    if(window.__TRD_REALTIME_CHANNEL) return;
+
+    const channel=client.channel('trd-esmeralda-live')
+      .on('postgres_changes',{event:'*',schema:'public',table:'esmeralda_teams',filter:`event_id=eq.${EVENT_ID}`},()=>{refreshPublic();refreshAdmin();})
+      .on('postgres_changes',{event:'*',schema:'public',table:'esmeralda_debaters'},()=>{refreshPublic();refreshAdmin();})
+      .on('postgres_changes',{event:'*',schema:'public',table:'esmeralda_registrations',filter:`event_id=eq.${EVENT_ID}`},()=>{refreshPublic();refreshAdmin();})
+      .on('postgres_changes',{event:'*',schema:'public',table:'esmeralda_rounds',filter:`event_id=eq.${EVENT_ID}`},()=>{refreshPublic();refreshAdmin();})
+      .on('postgres_changes',{event:'*',schema:'public',table:'esmeralda_matches'},()=>{refreshPublic();refreshAdmin();})
+      .on('postgres_changes',{event:'*',schema:'public',table:'esmeralda_announcements',filter:`event_id=eq.${EVENT_ID}`},()=>{refreshPublic();refreshAdmin();})
+      .subscribe((status)=>{
+        console.log('TRD realtime:',status);
+        if(status==='SUBSCRIBED') window.dispatchEvent(new CustomEvent('trd:realtime-ready'));
+      });
+
+    window.__TRD_REALTIME_CHANNEL=channel;
+  };
+
+  const decorateNavigation=()=>{
+    document.querySelectorAll('.nav a[data-view]').forEach((link)=>{
+      link.addEventListener('click',()=>setTimeout(refreshPublic,0),{passive:true});
+    });
+  };
+
+  const start=async()=>{
+    try{
+      if(!window.__TRD_DB && typeof window.supabase!=='undefined') await loadScript(CORE);
+      console.log('TRD core local cargado correctamente');
+      setupRealtime();
+      decorateNavigation();
+    }catch(error){
+      console.error('TRD core/realtime:',error);
+    }
+  };
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true});
+  else start();
 })();
