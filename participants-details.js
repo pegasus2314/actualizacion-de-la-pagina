@@ -9,7 +9,7 @@
   const qrUrl=id=>origin+'acreditacion.html?type=participant&id='+encodeURIComponent(id);
   const status=s=>s==='accredited'?'ACREDITADO':s==='rejected'?'RECHAZADO':'PENDIENTE';
   const statusClass=s=>s==='accredited'?'accredited':s==='rejected'?'rejected':'pending';
-  const QR_ROLES=new Set(['admin','coordinator','reviewer','subsecretario_acreditacion','logistica','logistico','coordinador_logistica']);
+  const QR_ROLES=new Set(['admin','admin_maestro','coordinador','coordinator','acreditacion','reviewer','subsecretario_acreditacion','logistica','logistico','coordinador_logistica']);
   let timer,lastData=[],canSeeQr=false;
 
   async function ensureQrCode(){
@@ -30,8 +30,8 @@
     try{
       const {data:{user}}=await db.auth.getUser();
       if(!user)return;
-      const {data:staff}=await db.from('esmeralda_staff_roles').select('role').eq('user_id',user.id).maybeSingle();
-      canSeeQr=!!staff?.role && QR_ROLES.has(staff.role);
+      const {data:staff}=await db.from('esmeralda_staff_roles').select('role').eq('user_id',user.id).in('role',[...QR_ROLES]).limit(1);
+      canSeeQr=!!staff?.length;
     }catch(_){canSeeQr=false}
   }
 
@@ -50,11 +50,11 @@
     const groups=new Map();
     data.forEach(p=>{if(!groups.has(p.team_id))groups.set(p.team_id,{team_name:p.team_name,school_name:p.school_name,district:p.district,members:[]});groups.get(p.team_id).members.push(p)});
     grid.classList.add('participants-detail-grid');
-    grid.innerHTML=`<div class="participants-switcher" role="tablist"><button type="button" class="participants-tab active" data-participants-tab="teams">Equipos <span>${groups.size}</span></button><button type="button" class="participants-tab" data-participants-tab="people">Participantes <span>${data.length}</span></button></div><div class="participants-pane" data-participants-pane="teams"></div><div class="participants-pane hidden" data-participants-pane="people"></div>`;
+    grid.innerHTML=`<div class="participants-switcher" role="tablist"><button type="button" class="participants-tab" data-participants-tab="teams">Equipos <span>${groups.size}</span></button><button type="button" class="participants-tab active" data-participants-tab="people">Participantes <span>${data.length}</span></button></div><div class="participants-pane hidden" data-participants-pane="teams"></div><div class="participants-pane" data-participants-pane="people"></div>`;
     const teamsPane=grid.querySelector('[data-participants-pane="teams"]');
     teamsPane.innerHTML=groups.size?[...groups.values()].map(team=>`<article class="participant-detail-team"><header class="participant-detail-team-head"><div><span class="eyebrow">EQUIPO APROBADO</span><h3>${esc(team.team_name)}</h3><p>${esc(team.school_name||'Centro educativo')}${team.district?' · '+esc(team.district):''}</p></div><span class="member-count">${team.members.length} ${team.members.length===1?'participante':'participantes'}</span></header><div class="participant-detail-members">${team.members.map((p,i)=>memberRow(p,i+1)).join('')}</div></article>`).join(''):'<div class="empty">Aún no hay participantes de equipos aprobados.</div>';
     const peoplePane=grid.querySelector('[data-participants-pane="people"]');
-    peoplePane.innerHTML=data.length?`<div class="participants-toolbar"><div><strong>Participantes registrados</strong><small>Selecciona una persona para consultar su acreditación.</small></div><input class="participants-search" type="search" placeholder="Buscar participante..."></div><div class="people-list">${data.map(personCard).join('')}</div>`:'<div class="empty">No hay participantes disponibles.</div>';
+    peoplePane.innerHTML=data.length?`<div class="participants-toolbar"><div><strong>Participantes registrados</strong><small>Listado individual. El equipo aparece debajo de cada participante.</small></div><input class="participants-search" type="search" placeholder="Buscar participante..."></div><div class="people-list">${data.map(personCard).join('')}</div>`:'<div class="empty">No hay participantes disponibles.</div>';
     grid.querySelectorAll('[data-participants-tab]').forEach(tab=>tab.onclick=()=>{const target=tab.dataset.participantsTab;grid.querySelectorAll('[data-participants-tab]').forEach(x=>x.classList.toggle('active',x===tab));grid.querySelectorAll('[data-participants-pane]').forEach(x=>x.classList.toggle('hidden',x.dataset.participantsPane!==target))});
     const search=grid.querySelector('.participants-search');
     if(search)search.oninput=()=>{const q=search.value.trim().toLowerCase();grid.querySelectorAll('.person-card').forEach(card=>card.classList.toggle('hidden',q&&!card.dataset.search.includes(q)))};
@@ -63,7 +63,7 @@
 
   function qrButton(p){return canSeeQr?`<button class="participant-detail-qr" type="button" data-public-qr="${esc(p.id)}">▣ QR</button>`:''}
   function memberRow(p,i){return `<article class="participant-detail-card"><div class="participant-detail-number">${i}</div><div class="participant-detail-main"><div class="participant-detail-name">${esc(p.full_name)}</div><div class="participant-detail-meta"><span>${esc(role(p.role))}</span>${p.grade?`<span>Grado: ${esc(p.grade)}</span>`:''}<span>${esc(p.school_name||'Centro no indicado')}</span>${p.district?`<span>${esc(p.district)}</span>`:''}<span class="status-pill ${statusClass(p.accreditation_status)}">${status(p.accreditation_status)}</span></div></div>${qrButton(p)}</article>`}
-  function personCard(p){const search=[p.full_name,p.team_name,p.school_name,p.district,p.grade,role(p.role)].filter(Boolean).join(' ').toLowerCase();return `<article class="person-card" data-search="${esc(search)}"><div class="person-avatar">${esc((p.full_name||'?').trim().charAt(0).toUpperCase())}</div><div class="person-main"><h3>${esc(p.full_name)}</h3><p>${esc(p.team_name||'Equipo no indicado')}</p><div class="person-meta"><span>${esc(p.school_name||'Centro no indicado')}</span>${p.district?`<span>${esc(p.district)}</span>`:''}${p.grade?`<span>${esc(p.grade)}</span>`:''}<span>${esc(role(p.role))}</span></div><span class="status-pill ${statusClass(p.accreditation_status)}">${status(p.accreditation_status)}</span></div>${canSeeQr?`<button class="person-view-qr participant-detail-qr" type="button" data-public-qr="${esc(p.id)}">Ver QR</button>`:''}</article>`}
+  function personCard(p){const search=[p.full_name,p.team_name,p.school_name,p.district,p.grade,role(p.role)].filter(Boolean).join(' ').toLowerCase();return `<article class="person-card" data-search="${esc(search)}"><div class="person-avatar">${esc((p.full_name||'?').trim().charAt(0).toUpperCase())}</div><div class="person-main"><h3>${esc(p.full_name)}</h3><p>Equipo: <strong>${esc(p.team_name||'Equipo no indicado')}</strong></p><div class="person-meta"><span>${esc(p.school_name||'Centro no indicado')}</span>${p.district?`<span>${esc(p.district)}</span>`:''}${p.grade?`<span>${esc(p.grade)}</span>`:''}<span>${esc(role(p.role))}</span></div><span class="status-pill ${statusClass(p.accreditation_status)}">${status(p.accreditation_status)}</span></div>${canSeeQr?`<button class="person-view-qr participant-detail-qr" type="button" data-public-qr="${esc(p.id)}">Ver QR</button>`:''}</article>`}
 
   function bindQr(root){
     if(!canSeeQr)return;
@@ -72,7 +72,7 @@
       if(!ok){alert('No se pudo cargar el generador QR. Revisa la conexión a Internet.');return}
       const id=btn.dataset.publicQr,p=lastData.find(x=>String(x.id)===String(id));
       const d=document.createElement('dialog');d.className='participant-public-qr-dialog';
-      d.innerHTML=`<div class="participant-public-qr-card"><button class="close" type="button">×</button><span class="eyebrow">ACREDITACIÓN DEL PARTICIPANTE</span><h2>${esc(p?.full_name||'Participante')}</h2><p>${esc(p?.team_name||'')} ${p?.school_name?'· '+esc(p.school_name):''}</p><div class="public-qr-box" aria-label="Código QR"></div><p>Presenta este código para verificar la acreditación.</p></div>`;
+      d.innerHTML=`<div class="participant-public-qr-card"><button class="close" type="button">×</button><span class="eyebrow">QR DEL PARTICIPANTE</span><h2>${esc(p?.full_name||'Participante')}</h2><p>${esc(p?.team_name||'')} ${p?.school_name?'· '+esc(p.school_name):''}</p><div class="public-qr-box" aria-label="Código QR"></div><p>Este código solo identifica al participante. Los datos privados se consultan en la pantalla protegida de acreditación.</p></div>`;
       document.body.appendChild(d);d.showModal();
       d.querySelector('.close').onclick=()=>{d.close();d.remove()};d.addEventListener('click',e=>{if(e.target===d){d.close();d.remove()}});
       new QRCode(d.querySelector('.public-qr-box'),{text:qrUrl(id),width:220,height:220,correctLevel:QRCode.CorrectLevel.H});
