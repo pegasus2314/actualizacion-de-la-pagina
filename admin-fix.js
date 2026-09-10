@@ -58,7 +58,7 @@ async function overview(client,event){
 async function teams(client,event){
   const {data,error}=await client.from('esmeralda_teams').select('id,team_name,school_name,district,status,created_at').eq('event_id',event.id).order('created_at',{ascending:false});
   if(error)throw new Error('No se pudieron cargar los equipos: '+error.message);
-  setPanel('Equipos',`<div class="table-wrap"><table class="data-table"><thead><tr><th>Equipo</th><th>Centro</th><th>Distrito</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>${(data||[]).map(t=>`<tr><td><b>${esc(t.team_name)}</b></td><td>${esc(t.school_name||'—')}</td><td>${esc(t.district||'—')}</td><td>${label(t.status)}</td><td>${t.status!=='approved'?`<button type="button" class="btn small primary" data-admin-fix="approve" data-id="${t.id}">Aprobar</button>`:''} ${t.status!=='rejected'?`<button type="button" class="btn small danger" data-admin-fix="reject" data-id="${t.id}">Rechazar</button>`:''}</td></tr>`).join('')||'<tr><td colspan="5">No hay equipos registrados.</td></tr>'}</tbody></table></div>`);
+  setPanel('Equipos',`<div class="table-wrap"><table class="data-table"><thead><tr><th>Equipo</th><th>Centro</th><th>Distrito</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>${(data||[]).map(t=>`<tr><td><b>${esc(t.team_name)}</b></td><td>${esc(t.school_name||'—')}</td><td>${esc(t.district||'—')}</td><td>${label(t.status)}</td><td><button type="button" class="btn small outline" data-admin-fix="view-team" data-id="${t.id}">Ver</button> ${t.status!=='approved'?`<button type="button" class="btn small primary" data-admin-fix="approve" data-id="${t.id}">Aprobar</button>`:''} ${t.status!=='rejected'?`<button type="button" class="btn small danger" data-admin-fix="reject" data-id="${t.id}">Rechazar</button>`:''} <button type="button" class="btn small danger" data-admin-fix="delete-team" data-id="${t.id}">Eliminar equipo</button></td></tr>`).join('')||'<tr><td colspan="5">No hay equipos registrados.</td></tr>'}</tbody></table></div>`);
 }
 
 async function rounds(client,event){
@@ -107,6 +107,48 @@ async function status(id,status){
   }catch(error){alert('No se pudo actualizar el equipo: '+(error.message||error))}
 }
 
+async function deleteParticipant(id){
+  if(!confirm('¿Eliminar este participante? Esta acción no se puede deshacer.'))return;
+  try{
+    const client=await waitForDb();
+    const {error}=await client.from('esmeralda_debaters').delete().eq('id',id);
+    if(error)throw error;
+    document.getElementById('teamDetailDialog')?.close();
+    alert('Participante eliminado correctamente.');
+    await render('teams');
+    window.dispatchEvent(new CustomEvent('trd:admin-data-changed'));
+  }catch(error){alert('No se pudo eliminar el participante: '+(error.message||error))}
+}
+
+async function deleteTeam(id){
+  if(!confirm('¿Eliminar este equipo y todos sus participantes, coach y registro? Esta acción no se puede deshacer.'))return;
+  try{
+    const client=await waitForDb();
+    const cleanup=[
+      ['esmeralda_debaters','team_id'],
+      ['esmeralda_coaches','team_id'],
+      ['esmeralda_registrations','team_id']
+    ];
+    for(const [table,column] of cleanup){
+      const {error}=await client.from(table).delete().eq(column,id);
+      if(error)throw new Error(`No se pudo limpiar ${table}: ${error.message}`);
+    }
+    const {error}=await client.from('esmeralda_teams').delete().eq('id',id);
+    if(error)throw error;
+    alert('Equipo eliminado correctamente.');
+    await render('teams');
+    window.dispatchEvent(new CustomEvent('trd:admin-data-changed'));
+  }catch(error){alert('No se pudo eliminar el equipo: '+(error.message||error))}
+}
+
+async function showTeamDetails(id){
+  const [{data:t,error:tError},{data:coach},{data:debaters}]=await Promise.all([db().from('esmeralda_teams').select('*').eq('id',id).maybeSingle(),db().from('esmeralda_coaches').select('*').eq('team_id',id).maybeSingle(),db().from('esmeralda_debaters').select('id,full_name,email,role').eq('team_id',id).order('created_at')]);
+  if(tError||!t){alert('Equipo no encontrado.');return}
+  let d=$('#teamDetailDialog');if(!d){d=document.createElement('dialog');d.id='teamDetailDialog';document.body.appendChild(d)}
+  d.innerHTML=`<div class="team-ficha-shell"><header class="team-ficha-header"><div><span class="eyebrow">FICHA DEL EQUIPO</span><h2>${esc(t.team_name)}</h2><p>${esc(t.school_name||'Centro no registrado')}${t.district?' · '+esc(t.district):''}</p></div><button type="button" class="team-ficha-close" data-admin-fix="close-detail">×</button></header><main class="team-ficha-content"><section class="team-ficha-section"><div class="team-ficha-section-title"><span>Información del equipo</span><span class="team-ficha-status ${esc(t.status||'pending')}">${label(t.status)}</span></div><div class="team-ficha-grid"><div class="team-ficha-item"><small>Centro educativo</small><strong>${esc(t.school_name||'—')}</strong></div><div class="team-ficha-item"><small>Distrito</small><strong>${esc(t.district||'—')}</strong></div><div class="team-ficha-item"><small>Responsable</small><strong>${esc(t.contact_name||'—')}</strong></div><div class="team-ficha-item"><small>Correo</small><strong>${esc(t.contact_email||'—')}</strong></div></div></section><section class="team-ficha-section"><div class="team-ficha-section-title"><span>Docente coach</span></div>${coach?`<div class="team-ficha-coach"><strong>${esc(coach.full_name||'—')}</strong><span>${esc(coach.email||'Sin correo')}</span></div>`:'<div class="team-ficha-empty">No hay docente coach registrado.</div>'}</section><section class="team-ficha-section"><div class="team-ficha-section-title"><span>Integrantes</span><span class="team-ficha-count">${(debaters||[]).length}</span></div><div class="team-ficha-members">${(debaters||[]).map((x,i)=>`<div class="team-ficha-member"><span class="team-ficha-number">${i+1}</span><div><strong>${esc(x.full_name||'Sin nombre')}</strong><span>${x.role==='alternate'?'Suplente':'Debatiente'}${x.email?' · '+esc(x.email):''}</span></div><button type="button" class="btn small danger" data-admin-fix="delete-participant" data-id="${x.id}">Eliminar</button></div>`).join('')||'<div class="team-ficha-empty">No hay integrantes registrados.</div>'}</div></section></main><footer class="team-ficha-footer"><button type="button" class="btn outline" data-admin-fix="close-detail">Cerrar</button><div><button type="button" class="btn danger" data-admin-fix="delete-team" data-id="${t.id}">Eliminar equipo</button> ${t.status!=='rejected'?`<button type="button" class="btn danger" data-admin-fix="reject" data-id="${t.id}">Rechazar</button>`:''}${t.status!=='approved'?`<button type="button" class="btn primary" data-admin-fix="approve" data-id="${t.id}">Aprobar equipo</button>`:''}</div></footer></div>`;
+  d.showModal()
+}
+
 function removeLegacy(){document.querySelectorAll('.admin-nav button').forEach(b=>{const t=b.textContent.trim().toLowerCase();if(t.includes('enfrentamientos')||t.includes('parejas'))b.remove()})}
 
 function bind(){
@@ -128,6 +170,10 @@ function bind(){
     if(type==='refresh')return render('overview');
     if(type==='approve')return status(id,'approved');
     if(type==='reject'){if(confirm('¿Confirmas que quieres rechazar este equipo?'))return status(id,'rejected')}
+    if(type==='view-team')return showTeamDetails(id);
+    if(type==='close-detail'){document.getElementById('teamDetailDialog')?.close();return}
+    if(type==='delete-participant')return deleteParticipant(id);
+    if(type==='delete-team')return deleteTeam(id);
     if(type==='delete-round'){if(!confirm('Eliminar esta ronda. ¿Continuar?'))return;try{const {error}=await db().from('esmeralda_rounds').delete().eq('id',id);if(error)throw error;await render('rounds')}catch(error){alert(error.message)}}
     if(type==='delete-announcement'){if(!confirm('¿Eliminar este anuncio?'))return;try{const {error}=await db().from('esmeralda_announcements').delete().eq('id',id);if(error)throw error;await render('announcements')}catch(error){alert(error.message)}}
   },true);
