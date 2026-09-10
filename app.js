@@ -1,6 +1,7 @@
 (()=>{
   'use strict';
   const SUPABASE_CDN='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+  const QR_CDN='https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js';
   const SUPABASE_URL='https://bstdgcpakqmltifzaqso.supabase.co';
   const SUPABASE_KEY='sb_publishable_-39OPIl11i5GSPBbF3q0ew_puLiVK7N';
   const EVENT_ID='0f2469a3-e670-4fb9-a183-d0db60526372';
@@ -19,13 +20,9 @@
 
   const replaceLeadingIcon=(el,name)=>{
     if(!el)return;
-    const existing=el.querySelector(':scope > .trd-icon');
-    if(existing)return;
-    const text=[...el.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join('').trim();
+    if(el.querySelector(':scope > .trd-icon'))return;
     const symbols=/^[⌂▤♙◉⌖♟⚙]+(?:\s|&nbsp;| )*$/;
-    [...el.childNodes].forEach(n=>{
-      if(n.nodeType===3&&symbols.test(n.textContent.trim()))n.remove();
-    });
+    [...el.childNodes].forEach(n=>{if(n.nodeType===3&&symbols.test(n.textContent.trim()))n.remove()});
     el.insertAdjacentHTML('afterbegin',icon(name));
   };
 
@@ -35,50 +32,31 @@
     const css=document.createElement('style');
     css.textContent='.trd-icon{width:18px;height:18px;display:inline-block;vertical-align:-4px;flex:0 0 auto}.nav a{display:inline-flex;align-items:center;gap:7px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px}.competition-card>span,.logistics-icon,.logistics-item>span{font-size:0}.competition-card>span .trd-icon{width:22px;height:22px}.logistics-icon .trd-icon{width:21px;height:21px}.logistics-item>span .trd-icon{width:16px;height:16px}.hero-actions .trd-icon{width:17px;height:17px}.top-actions .trd-icon{width:16px;height:16px}';
     document.head.appendChild(css);
-
     const navIcons={Inicio:'home',Inscripción:'clipboard',Participantes:'users','El torneo':'trophy',Logística:'pin'};
-    document.querySelectorAll('.nav a[data-view]').forEach(a=>{
-      const label=a.querySelector('span')?.textContent.trim();
-      if(navIcons[label])replaceLeadingIcon(a,navIcons[label]);
-    });
-
+    document.querySelectorAll('.nav a[data-view]').forEach(a=>{const label=a.querySelector('span')?.textContent.trim();if(navIcons[label])replaceLeadingIcon(a,navIcons[label])});
     replaceLeadingIcon(document.querySelector('#adminBtn'),'settings');
-
-    document.querySelectorAll('.hero-actions a.btn').forEach(a=>{
-      const name=a.textContent.includes('Inscribir')?'trophy':'users';
-      replaceLeadingIcon(a,name);
-    });
-
+    document.querySelectorAll('.hero-actions a.btn').forEach(a=>replaceLeadingIcon(a,a.textContent.includes('Inscribir')?'trophy':'users'));
     const cardIcons=['clipboard','users','trophy','pin'];
-    document.querySelectorAll('.competition-card').forEach((card,index)=>{
-      const span=card.querySelector(':scope>span');
-      if(span)span.innerHTML=icon(cardIcons[index]||'trophy');
-    });
+    document.querySelectorAll('.competition-card').forEach((card,index)=>{const span=card.querySelector(':scope>span');if(span)span.innerHTML=icon(cardIcons[index]||'trophy')});
   };
 
   const bindAdminButton=()=>{
-    const admin=document.querySelector('#adminBtn');
-    const dialog=document.querySelector('#loginDialog');
-    if(admin&&dialog&&!admin.dataset.trdAdminBound){
-      admin.dataset.trdAdminBound='1';
-      admin.addEventListener('click',e=>{e.preventDefault();dialog.showModal?.();dialog.classList.remove('hidden');});
-    }
+    const admin=document.querySelector('#adminBtn'),dialog=document.querySelector('#loginDialog');
+    if(admin&&dialog&&!admin.dataset.trdAdminBound){admin.dataset.trdAdminBound='1';admin.addEventListener('click',e=>{e.preventDefault();dialog.showModal?.();dialog.classList.remove('hidden')})}
   };
 
   const loadSupabase=()=>new Promise((resolve,reject)=>{
     if(window.supabase&&typeof window.supabase.createClient==='function')return resolve();
     const existing=document.querySelector(`script[src="${SUPABASE_CDN}"]`);
-    if(existing){
-      existing.addEventListener('load',resolve,{once:true});
-      existing.addEventListener('error',()=>reject(new Error('No se pudo cargar Supabase JS')),{once:true});
-      return;
-    }
-    const script=document.createElement('script');
-    script.src=SUPABASE_CDN;
-    script.async=false;
-    script.onload=resolve;
-    script.onerror=()=>reject(new Error('No se pudo cargar Supabase JS'));
-    document.head.appendChild(script);
+    if(existing){existing.addEventListener('load',resolve,{once:true});existing.addEventListener('error',()=>reject(new Error('No se pudo cargar Supabase JS')),{once:true});return}
+    const script=document.createElement('script');script.src=SUPABASE_CDN;script.async=false;script.onload=resolve;script.onerror=()=>reject(new Error('No se pudo cargar Supabase JS'));document.head.appendChild(script)
+  });
+
+  const loadQr=()=>new Promise((resolve,reject)=>{
+    if(window.QRCode?.toCanvas)return resolve();
+    const existing=document.querySelector(`script[src="${QR_CDN}"]`);
+    if(existing){existing.addEventListener('load',resolve,{once:true});existing.addEventListener('error',()=>reject(new Error('No se pudo cargar QRCode')),{once:true});return}
+    const script=document.createElement('script');script.src=QR_CDN;script.async=true;script.onload=resolve;script.onerror=()=>reject(new Error('No se pudo cargar QRCode'));document.head.appendChild(script)
   });
 
   const ensureClient=async()=>{
@@ -88,26 +66,32 @@
     return window.__TRD_DB||(window.__TRD_DB=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY));
   };
 
+  const renderGeneralTeams=async()=>{
+    const home=document.querySelector('#inicio');
+    if(!home||home.querySelector('#generalApprovedTeams'))return;
+    const client=window.__TRD_DB;if(!client)return;
+    const {data:teams,error}=await client.from('esmeralda_public_teams').select('team_name,school_name,district').eq('event_id',EVENT_ID).order('team_name');
+    if(error){console.error('TRD equipos vista general',error);return}
+    const section=document.createElement('section');section.id='generalApprovedTeams';section.className='section';
+    section.innerHTML=`<div class="section-heading"><div><span class="eyebrow">PARTICIPANTES</span><h2>Equipos aprobados</h2></div><p>Estos son los equipos publicados oficialmente para el TRD La Regional Esmeralda.</p></div><div class="general-teams-grid">${teams?.length?teams.map(t=>`<article class="general-team-card"><span>● EQUIPO APROBADO</span><h3>${escapeHtml(t.team_name)}</h3><p>${escapeHtml(t.school_name||'Centro no registrado')}${t.district?' · '+escapeHtml(t.district):''}</p></article>`).join(''):'<div class="empty">Aún no hay equipos aprobados publicados.</div>'}</div>`;
+    const intro=home.querySelector('.home-intro');if(intro)intro.insertAdjacentElement('afterend',section);else home.appendChild(section);
+  };
+
+  const escapeHtml=v=>String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]));
+
   const refreshPublic=()=>{
-    try{
-      if(typeof window.loadStats==='function')window.loadStats();
-      if(typeof window.loadPublicTeams==='function')window.loadPublicTeams();
-    }catch(error){console.error('TRD realtime refresh público',error)}
+    try{if(typeof window.loadStats==='function')window.loadStats();if(typeof window.loadPublicTeams==='function')window.loadPublicTeams();renderGeneralTeams()}catch(error){console.error('TRD realtime refresh público',error)}
     window.dispatchEvent(new CustomEvent('trd:data-changed'));
-    const grid=document.querySelector('#teamsGrid');
-    if(grid)grid.dispatchEvent(new CustomEvent('trd:reload-participants'));
+    const grid=document.querySelector('#teamsGrid');if(grid)grid.dispatchEvent(new CustomEvent('trd:reload-participants'));
   };
 
   const refreshAdmin=()=>{
-    try{
-      if(typeof window.loadAdmin==='function'&&window.location.hash==='#admin')window.loadAdmin();
-    }catch(error){console.error('TRD realtime refresh admin',error)}
+    try{if(typeof window.loadAdmin==='function'&&window.location.hash==='#admin')window.loadAdmin()}catch(error){console.error('TRD realtime refresh admin',error)}
     window.dispatchEvent(new CustomEvent('trd:admin-data-changed'));
   };
 
   const setupRealtime=(client)=>{
-    if(!client||typeof client.channel!=='function')return;
-    if(window.__TRD_REALTIME_CHANNEL)return;
+    if(!client||typeof client.channel!=='function'||window.__TRD_REALTIME_CHANNEL)return;
     const channel=client.channel('trd-esmeralda-live')
       .on('postgres_changes',{event:'*',schema:'public',table:'esmeralda_teams',filter:`event_id=eq.${EVENT_ID}`},()=>{refreshPublic();refreshAdmin()})
       .on('postgres_changes',{event:'*',schema:'public',table:'esmeralda_debaters'},()=>{refreshPublic();refreshAdmin()})
@@ -115,30 +99,16 @@
       .on('postgres_changes',{event:'*',schema:'public',table:'esmeralda_rounds',filter:`event_id=eq.${EVENT_ID}`},()=>{refreshPublic();refreshAdmin()})
       .on('postgres_changes',{event:'*',schema:'public',table:'esmeralda_matches'},()=>{refreshPublic();refreshAdmin()})
       .on('postgres_changes',{event:'*',schema:'public',table:'esmeralda_announcements',filter:`event_id=eq.${EVENT_ID}`},()=>{refreshPublic();refreshAdmin()})
-      .subscribe(status=>{
-        console.log('TRD realtime:',status);
-        if(status==='SUBSCRIBED')window.dispatchEvent(new CustomEvent('trd:realtime-ready'));
-      });
+      .subscribe(status=>{console.log('TRD realtime:',status);if(status==='SUBSCRIBED')window.dispatchEvent(new CustomEvent('trd:realtime-ready'))});
     window.__TRD_REALTIME_CHANNEL=channel;
   };
 
-  const decorateNavigation=()=>{
-    document.querySelectorAll('.nav a[data-view]').forEach(link=>link.addEventListener('click',()=>setTimeout(refreshPublic,0),{passive:true}));
-  };
+  const decorateNavigation=()=>document.querySelectorAll('.nav a[data-view]').forEach(link=>link.addEventListener('click',()=>setTimeout(refreshPublic,0),{passive:true}));
 
   const start=async()=>{
-    restoreIcons();
-    bindAdminButton();
-    try{
-      const client=await ensureClient();
-      console.log('TRD Supabase local cargado correctamente');
-      setupRealtime(client);
-      decorateNavigation();
-    }catch(error){
-      console.error('TRD Supabase/realtime:',error);
-    }
+    restoreIcons();bindAdminButton();
+    try{const client=await ensureClient();console.log('TRD Supabase local cargado correctamente');setupRealtime(client);decorateNavigation();await renderGeneralTeams()}catch(error){console.error('TRD Supabase/realtime:',error)}
   };
 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
-  else start();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
