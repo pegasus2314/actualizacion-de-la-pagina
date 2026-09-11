@@ -94,6 +94,8 @@ async function getEvent(client){
   return data;
 }
 
+const ADMIN_PANEL_ROLES=['admin','admin_maestro','coordinador'];
+
 async function getStaff(client){
   const {data:{session},error:sessionError}=await client.auth.getSession();
   if(sessionError)throw new Error('No se pudo comprobar la sesión: '+sessionError.message);
@@ -101,6 +103,11 @@ async function getStaff(client){
   const {data,error}=await client.from('esmeralda_staff_roles').select('role').eq('user_id',session.user.id).maybeSingle();
   if(error)throw new Error('No se pudo comprobar el permiso administrativo: '+error.message);
   if(!data?.role)throw new Error('La cuenta no tiene un rol administrativo autorizado.');
+  // Nota de seguridad: esto solo controla qué se pinta en pantalla. La
+  // protección real vive en las políticas RLS de Supabase (roles admin/
+  // admin_maestro/coordinador), que ya bloquean estas operaciones para
+  // cualquier otro rol aunque alguien llame a la API directamente.
+  if(!ADMIN_PANEL_ROLES.includes(data.role))throw new Error('Tu rol ("'+data.role+'") no tiene acceso a este panel. El panel general es solo para admin, admin_maestro y coordinador.');
   return data.role;
 }
 
