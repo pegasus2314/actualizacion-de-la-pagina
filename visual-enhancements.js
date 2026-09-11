@@ -1,38 +1,10 @@
 (()=>{'use strict';
-const URL='https://bstdgcpakqmltifzaqso.supabase.co';
-const KEY='sb_publishable_-39OPIl11i5GSPBbF3q0ew_puLiVK7N';
-const client=window.supabase?.createClient?window.supabase.createClient(URL,KEY):null;
-function eventId(){return client.from('esmeralda_events').select('id').eq('slug','trd-la-regional-esmeralda').maybeSingle().then(r=>r.data?.id||null)}
-function setupField(input,kind){if(!input||input.dataset.trdSchoolReady)return;input.dataset.trdSchoolReady='1';const box=document.createElement('div');box.className='trd-school-people';input.insertAdjacentElement('afterend',box);let timer;const update=()=>{const school=input.value.trim();clearTimeout(timer);if(!school){box.innerHTML='';box.classList.remove('show');return}box.classList.add('show');box.innerHTML='<span class="trd-school-loading">Consultando participantes registrados…</span>';timer=setTimeout(async()=>{try{const eid=await eventId();if(!eid)return;const {data,error}=await client.rpc('trd_school_participant_count',{p_event_id:eid,p_school_name:school});if(error)throw error;const count=Number(data?.count||0);box.innerHTML=`<strong>${count}</strong><span>${count===1?'participante registrado':'participantes registrados'} de este centro</span>${kind==='coach'?'<small>Dato informativo del centro.</small>':''}`}catch(err){console.error('school count',err);box.innerHTML='<span class="trd-school-muted">No se pudo consultar el registro ahora.</span>'}},180)};input.addEventListener('input',update);input.addEventListener('change',update);input.addEventListener('blur',update)}
-function init(){if(!client)return;let style=document.getElementById('trd-school-style');if(!style){style=document.createElement('style');style.id='trd-school-style';style.textContent='.trd-school-people{display:none;align-items:center;gap:8px;margin-top:8px;padding:10px 12px;border:1px solid rgba(25,220,229,.16);border-radius:11px;background:rgba(25,220,229,.045);color:#8fa8b6;font-size:11px;line-height:1.35}.trd-school-people.show{display:flex}.trd-school-people strong{font-family:Barlow,sans-serif;font-size:23px;color:var(--cyan);line-height:1}.trd-school-people span{font-weight:600}.trd-school-people small{display:block;color:#718996}.trd-school-loading,.trd-school-muted{color:#8fa8b6!important}';document.head.appendChild(style)}setupField(document.querySelector('#registrationForm input[name="school_name"]'),'school');setupField(document.querySelector('#registrationForm input[name="coach_school"]'),'coach')}
+// Nunca crea su propio cliente de Supabase: reutiliza siempre window.__TRD_DB
+// (inicializado por app.js) para evitar múltiples instancias de GoTrueClient
+// compitiendo por la misma sesión en el mismo storage key.
+function getClient(){return window.__TRD_DB||null}
+function eventId(){const client=getClient();if(!client)return Promise.resolve(null);return client.from('esmeralda_events').select('id').eq('slug','trd-la-regional-esmeralda').maybeSingle().then(r=>r.data?.id||null)}
+function setupField(input,kind){if(!input||input.dataset.trdSchoolReady)return;input.dataset.trdSchoolReady='1';const box=document.createElement('div');box.className='trd-school-people';input.insertAdjacentElement('afterend',box);let timer;const update=()=>{const client=getClient();if(!client)return;const school=input.value.trim();clearTimeout(timer);if(!school){box.innerHTML='';box.classList.remove('show');return}box.classList.add('show');box.innerHTML='<span class="trd-school-loading">Consultando participantes registrados…</span>';timer=setTimeout(async()=>{try{const eid=await eventId();if(!eid)return;const {data,error}=await client.rpc('trd_school_participant_count',{p_event_id:eid,p_school_name:school});if(error)throw error;const count=Number(data?.count||0);box.innerHTML=`<strong>${count}</strong><span>${count===1?'participante registrado':'participantes registrados'} de este centro</span>${kind==='coach'?'<small>Dato informativo del centro.</small>':''}`}catch(err){console.error('school count',err);box.innerHTML='<span class="trd-school-muted">No se pudo consultar el registro ahora.</span>'}},180)};input.addEventListener('input',update);input.addEventListener('change',update);input.addEventListener('blur',update)}
+function init(){let style=document.getElementById('trd-school-style');if(!style){style=document.createElement('style');style.id='trd-school-style';style.textContent='.trd-school-people{display:none;align-items:center;gap:8px;margin-top:8px;padding:10px 12px;border:1px solid rgba(25,220,229,.16);border-radius:11px;background:rgba(25,220,229,.045);color:#8fa8b6;font-size:11px;line-height:1.35}.trd-school-people.show{display:flex}.trd-school-people strong{font-family:Barlow,sans-serif;font-size:23px;color:var(--cyan);line-height:1}.trd-school-people span{font-weight:600}.trd-school-people small{display:block;color:#718996}.trd-school-loading,.trd-school-muted{color:#8fa8b6!important}';document.head.appendChild(style)}setupField(document.querySelector('#registrationForm input[name="school_name"]'),'school');setupField(document.querySelector('#registrationForm input[name="coach_school"]'),'coach')}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();new MutationObserver(init).observe(document.body,{childList:true,subtree:true});
-
-// El modal de "Solicitud enviada" solo debe mostrarse una vez por envío real.
-// El contenido de #formMessage permanece en el DOM al navegar entre apartados,
-// por eso el observer original puede detectarlo de nuevo. Guardamos la visualización
-// en sessionStorage y limpiamos esa marca cuando comienza una nueva inscripción.
-const REGISTRATION_MODAL_KEY='trd_registration_success_shown';
-function setupRegistrationSuccessGuard(){
-  const form=document.querySelector('#registrationForm');
-  if(form&&!form.dataset.successGuardReady){
-    form.dataset.successGuardReady='1';
-    form.addEventListener('submit',()=>sessionStorage.removeItem(REGISTRATION_MODAL_KEY),{capture:true});
-  }
-  const modal=document.querySelector('#trdRegistrationSuccess');
-  if(!modal)return;
-  if(modal.dataset.successGuardReady==='1')return;
-  modal.dataset.successGuardReady='1';
-  const sync=()=>{
-    if(modal.hidden)return;
-    if(sessionStorage.getItem(REGISTRATION_MODAL_KEY)==='1'){
-      modal.hidden=true;
-      return;
-    }
-    sessionStorage.setItem(REGISTRATION_MODAL_KEY,'1');
-  };
-  sync();
-  new MutationObserver(sync).observe(modal,{attributes:true,attributeFilter:['hidden']});
-}
-new MutationObserver(setupRegistrationSuccessGuard).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setupRegistrationSuccessGuard);else setupRegistrationSuccessGuard();
 })();
